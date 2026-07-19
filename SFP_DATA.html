@@ -99,7 +99,18 @@
         .status-ok { color: #155724; font-weight: bold; }
         .status-notok { color: #721c24; font-weight: bold; }
         .status-na { color: #6c757d; }
-        .output-text { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; font-family: 'Courier New', monospace; font-size: 11px; white-space: pre-wrap; max-height: 500px; overflow: auto; line-height: 1.3; }
+        .output-text { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border: 1px solid #e5e7eb; 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            white-space: pre-wrap; 
+            max-height: 500px; 
+            overflow: auto; 
+            line-height: 1.3;
+        }
         .output-text .ok { color: #155724; background: #d4edda; padding: 0 4px; border-radius: 3px; font-weight: bold; }
         .output-text .notok { color: #721c24; background: #f8d7da; padding: 0 4px; border-radius: 3px; font-weight: bold; }
         .output-text .na { color: #6c757d; }
@@ -114,33 +125,33 @@
 </head>
 <body>
     <div class="container">
-        <h1>📋 SFP Data Parser</h1>
+        <h1>ЁЯУЛ SFP Data Parser</h1>
         
-        <label class="section-label">📋 Paste SFP Data Below:</label>
+        <label class="section-label">ЁЯУЛ Paste SFP Data Below:</label>
         <textarea id="inputText" placeholder="Paste your SFP data here..."></textarea>
         
         <div class="button-group">
-            <button class="btn btn-primary" onclick="parseData()">🔄 Parse Data</button>
-            <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
-            <button class="btn btn-success" onclick="exportData()">💾 Export to File</button>
-            <button class="btn btn-warning" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+            <button class="btn btn-primary" onclick="parseData()">ЁЯФД Parse Data</button>
+            <button class="btn btn-danger" onclick="clearAll()">ЁЯЧСя╕П Clear All</button>
+            <button class="btn btn-success" onclick="exportData()">ЁЯТ╛ Export to File</button>
+            <button class="btn btn-warning" onclick="copyToClipboard()">ЁЯУЛ Copy to Clipboard</button>
         </div>
         
-        <div id="statusBar" class="status-bar">✅ Ready</div>
+        <div id="statusBar" class="status-bar">тЬЕ Ready</div>
         <div id="progressBar" class="progress-bar"><div class="progress-fill"></div></div>
         
-        <label class="section-label">📊 Parsed Results:</label>
+        <label class="section-label">ЁЯУК Parsed Results:</label>
         
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('table')">📊 Table View</button>
-            <button class="tab-btn" onclick="switchTab('text')">📝 Text View (Copyable)</button>
+            <button class="tab-btn active" onclick="switchTab('table')">ЁЯУК Table View</button>
+            <button class="tab-btn" onclick="switchTab('text')">ЁЯУЭ Text View (Copyable)</button>
         </div>
         
         <div id="tabTable" class="tab-content active">
             <!-- Filter Section -->
             <div class="filter-section">
                 <div class="filter-group">
-                    <label>🔍 Installed Status:</label>
+                    <label>ЁЯФН Installed Status:</label>
                     <select id="filterInstalled" onchange="applyFilters()">
                         <option value="all">All</option>
                         <option value="In Position">In Position</option>
@@ -148,25 +159,25 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>📊 Status TX:</label>
+                    <label>ЁЯУК Status TX:</label>
                     <select id="filterTx" onchange="applyFilters()">
                         <option value="all">All</option>
-                        <option value="OK">✅ OK</option>
-                        <option value="NOT OK">❌ NOT OK</option>
+                        <option value="OK">тЬЕ OK</option>
+                        <option value="NOT OK">тЭМ NOT OK</option>
                         <option value="N/A">N/A</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>📊 Status RX:</label>
+                    <label>ЁЯУК Status RX:</label>
                     <select id="filterRx" onchange="applyFilters()">
                         <option value="all">All</option>
-                        <option value="OK">✅ OK</option>
-                        <option value="NOT OK">❌ NOT OK</option>
+                        <option value="OK">тЬЕ OK</option>
+                        <option value="NOT OK">тЭМ NOT OK</option>
                         <option value="N/A">N/A</option>
                     </select>
                 </div>
                 <div class="filter-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="resetFilters()">🔄 Reset Filters</button>
+                    <button class="btn btn-secondary btn-sm" onclick="resetFilters()">ЁЯФД Reset Filters</button>
                     <span id="filterBadge" class="filter-badge">Showing: All</span>
                 </div>
             </div>
@@ -343,8 +354,7 @@
                 document.getElementById('filterBadge').className = 'filter-badge active';
             }
             
-            // Update status
-            showStatus(`🔍 Filtered: ${visibleCount} of ${total} entries`, 'info');
+            showStatus(`ЁЯФН Filtered: ${visibleCount} of ${total} entries`, 'info');
         }
 
         function resetFilters() {
@@ -352,18 +362,18 @@
             document.getElementById('filterTx').value = 'all';
             document.getElementById('filterRx').value = 'all';
             applyFilters();
-            showStatus('🔄 Filters reset', 'info');
+            showStatus('ЁЯФД Filters reset', 'info');
         }
 
         function parseData() {
             const text = document.getElementById('inputText').value;
             if (!text.trim()) {
-                showStatus('⚠️ Please paste some SFP data first!', 'error');
+                showStatus('тЪая╕П Please paste some SFP data first!', 'error');
                 return;
             }
 
             showProgress(true);
-            showStatus('⏳ Parsing data...', 'info');
+            showStatus('тП│ Parsing data...', 'info');
 
             setTimeout(() => {
                 try {
@@ -375,9 +385,9 @@
                     document.getElementById('rowCounter').textContent = `Total entries: ${entries.length}`;
                     document.getElementById('filterBadge').textContent = 'Showing: All';
                     document.getElementById('filterBadge').className = 'filter-badge';
-                    showStatus(`✅ Parsed ${entries.length} entries successfully`, 'success');
+                    showStatus(`тЬЕ Parsed ${entries.length} entries successfully`, 'success');
                 } catch (error) {
-                    showStatus(`❌ Error: ${error.message}`, 'error');
+                    showStatus(`тЭМ Error: ${error.message}`, 'error');
                     console.error(error);
                 } finally {
                     showProgress(false);
@@ -543,7 +553,6 @@
                 const rxStatus = entry["Status RX optical power"];
                 const installedStatus = entry["Installed status"] || "NULL";
                 
-                // Set data attributes untuk filtering
                 row.dataset.installed = installedStatus;
                 row.dataset.tx = txStatus;
                 row.dataset.rx = rxStatus;
@@ -576,7 +585,6 @@
                 tbody.appendChild(row);
             });
             
-            // Reset filters setelah update
             resetFilters();
         }
 
@@ -588,7 +596,7 @@
                 return;
             }
             
-            // Calculate column widths
+            // Calculate column widths untuk tabel data
             const colWidths = {};
             targetHeaders.forEach(header => {
                 colWidths[header] = header.length;
@@ -607,9 +615,98 @@
                 colWidths[header] += 2;
             });
             
+            // BUILD TEXT - SUMMARY di POSISI PALING ATAS
             let text = '';
             
-            // Header
+            // === 1. STATUS SUMMARY (PALING ATAS) ===
+            const okTx = entries.filter(e => e["Status TX optical power"] === "OK").length;
+            const notOkTx = entries.filter(e => e["Status TX optical power"] === "NOT OK").length;
+            const naTx = entries.filter(e => e["Status TX optical power"] === "N/A").length;
+            const okRx = entries.filter(e => e["Status RX optical power"] === "OK").length;
+            const notOkRx = entries.filter(e => e["Status RX optical power"] === "NOT OK").length;
+            const naRx = entries.filter(e => e["Status RX optical power"] === "N/A").length;
+            
+            text += `${'='.repeat(60)}\n`;
+            text += `STATUS SUMMARY:\n`;
+            text += `${'='.repeat(60)}\n`;
+            
+            text += `TX Optical Power: `;
+            text += `OK=${okTx} `;
+            if (okTx > 0) text += `тЬЕ `;
+            text += `NOT OK=${notOkTx} `;
+            if (notOkTx > 0) text += `тЭМ `;
+            text += `N/A=${naTx}\n`;
+            
+            text += `RX Optical Power: `;
+            text += `OK=${okRx} `;
+            if (okRx > 0) text += `тЬЕ `;
+            text += `NOT OK=${notOkRx} `;
+            if (notOkRx > 0) text += `тЭМ `;
+            text += `N/A=${naRx}\n`;
+            
+            // === 2. DETAIL NOT OK ENTRIES ===
+            const notOkEntries = entries.filter(e => 
+                e["Status TX optical power"] === "NOT OK" || 
+                e["Status RX optical power"] === "NOT OK"
+            );
+            
+            text += `\n${'='.repeat(60)}\n`;
+            text += `DETAIL NOT OK ENTRIES:\n`;
+            text += `${'='.repeat(60)}\n`;
+            
+            if (notOkEntries.length > 0) {
+                text += `Total NOT OK entries: ${notOkEntries.length} тЭМ\n\n`;
+                text += `${'Cabinet'.padEnd(10)} ${'Subrack'.padEnd(10)} ${'Slot'.padEnd(10)} ${'Port Type'.padEnd(12)} ${'Port No'.padEnd(8)} ${'Status TX'.padEnd(12)} ${'Status RX'.padEnd(12)} ${'TX Value'.padEnd(12)} ${'RX Value'.padEnd(12)}\n`;
+                text += `${'-'.repeat(100)}\n`;
+                
+                notOkEntries.forEach(entry => {
+                    const cabinet = String(entry["Cabinet No."] || "NULL").padEnd(10);
+                    const subrack = String(entry["Subrack No."] || "NULL").padEnd(10);
+                    const slot = String(entry["Slot No."] || "NULL").padEnd(10);
+                    const portType = String(entry["Port Type"] || "NULL").padEnd(12);
+                    const portNo = String(entry["Port No."] || "NULL").padEnd(8);
+                    const txStatus = String(entry["Status TX optical power"] || "N/A").padEnd(12);
+                    const rxStatus = String(entry["Status RX optical power"] || "N/A").padEnd(12);
+                    const txValue = String(entry["TX optical power(0.01dBm)"] || "NULL").padEnd(12);
+                    const rxValue = String(entry["RX optical power(0.01dBm)"] || "NULL").padEnd(12);
+                    
+                    let txDisplay = txStatus;
+                    let rxDisplay = rxStatus;
+                    if (txStatus.trim() === "OK") txDisplay = "тЬЕ OK";
+                    else if (txStatus.trim() === "NOT OK") txDisplay = "тЭМ NOT OK";
+                    
+                    if (rxStatus.trim() === "OK") rxDisplay = "тЬЕ OK";
+                    else if (rxStatus.trim() === "NOT OK") rxDisplay = "тЭМ NOT OK";
+                    
+                    text += `${cabinet} ${subrack} ${slot} ${portType} ${portNo} ${txDisplay.padEnd(12)} ${rxDisplay.padEnd(12)} ${txValue} ${rxValue}`;
+                    
+                    if (txStatus.trim() === "NOT OK" && rxStatus.trim() === "NOT OK") {
+                        text += `  тЖР тЭМ BOTH TX & RX NOT OK\n`;
+                    } else if (txStatus.trim() === "NOT OK") {
+                        const upper = String(entry["Transmit Power Upper Threshold(0.01dBm)"] || "NULL");
+                        const lower = String(entry["Transmit Power Lower Threshold(0.01dBm)"] || "NULL");
+                        text += `  тЖР тЭМ TX NOT OK (Range: ${lower} to ${upper})\n`;
+                    } else if (rxStatus.trim() === "NOT OK") {
+                        const upper = String(entry["Receive Power Upper Threshold(0.01dBm)"] || "NULL");
+                        const lower = String(entry["Receive Power Lower Threshold(0.01dBm)"] || "NULL");
+                        text += `  тЖР тЭМ RX NOT OK (Range: ${lower} to ${upper})\n`;
+                    }
+                });
+            } else {
+                text += `тЬЕ All entries are OK! No NOT OK entries found.\n`;
+            }
+            
+            // === 3. END OF REPORT ===
+            text += `\n${'='.repeat(60)}\n`;
+            text += `END OF REPORT\n`;
+            text += `${'='.repeat(60)}\n\n`;
+            
+            // === 4. DETAIL DATA (di bawah summary) ===
+            text += `\n${'='.repeat(60)}\n`;
+            text += `DETAIL DATA:\n`;
+            text += `${'='.repeat(60)}\n\n`;
+            
+            // Header tabel data
             let headerLine = '';
             let separatorLine = '';
             targetHeaders.forEach(header => {
@@ -628,87 +725,8 @@
                 text += row + '\n';
             });
             
-            // Summary dengan pewarnaan
-            const okTx = entries.filter(e => e["Status TX optical power"] === "OK").length;
-            const notOkTx = entries.filter(e => e["Status TX optical power"] === "NOT OK").length;
-            const naTx = entries.filter(e => e["Status TX optical power"] === "N/A").length;
-            const okRx = entries.filter(e => e["Status RX optical power"] === "OK").length;
-            const notOkRx = entries.filter(e => e["Status RX optical power"] === "NOT OK").length;
-            const naRx = entries.filter(e => e["Status RX optical power"] === "N/A").length;
-            
-            text += `\n${'='.repeat(60)}`;
-            text += `\nSTATUS SUMMARY:`;
-            text += `\n${'='.repeat(60)}`;
-            
-            text += `\nTX Optical Power: `;
-            text += `OK=${okTx} `;
-            if (okTx > 0) text += `✅ `;
-            text += `NOT OK=${notOkTx} `;
-            if (notOkTx > 0) text += `❌ `;
-            text += `N/A=${naTx}`;
-            
-            text += `\nRX Optical Power: `;
-            text += `OK=${okRx} `;
-            if (okRx > 0) text += `✅ `;
-            text += `NOT OK=${notOkRx} `;
-            if (notOkRx > 0) text += `❌ `;
-            text += `N/A=${naRx}`;
-            
-            // Detail NOT OK entries
-            const notOkEntries = entries.filter(e => 
-                e["Status TX optical power"] === "NOT OK" || 
-                e["Status RX optical power"] === "NOT OK"
-            );
-            
-            text += `\n\n${'='.repeat(60)}`;
-            text += `\nDETAIL NOT OK ENTRIES:`;
-            text += `\n${'='.repeat(60)}`;
-            
-            if (notOkEntries.length > 0) {
-                text += `\nTotal NOT OK entries: ${notOkEntries.length} ❌\n`;
-                text += `\n${'Cabinet'.padEnd(10)} ${'Subrack'.padEnd(10)} ${'Slot'.padEnd(10)} ${'Port Type'.padEnd(12)} ${'Port No'.padEnd(8)} ${'Status TX'.padEnd(12)} ${'Status RX'.padEnd(12)} ${'TX Value'.padEnd(12)} ${'RX Value'.padEnd(12)}`;
-                text += `\n${'-'.repeat(100)}`;
-                
-                notOkEntries.forEach(entry => {
-                    const cabinet = String(entry["Cabinet No."] || "NULL").padEnd(10);
-                    const subrack = String(entry["Subrack No."] || "NULL").padEnd(10);
-                    const slot = String(entry["Slot No."] || "NULL").padEnd(10);
-                    const portType = String(entry["Port Type"] || "NULL").padEnd(12);
-                    const portNo = String(entry["Port No."] || "NULL").padEnd(8);
-                    const txStatus = String(entry["Status TX optical power"] || "N/A").padEnd(12);
-                    const rxStatus = String(entry["Status RX optical power"] || "N/A").padEnd(12);
-                    const txValue = String(entry["TX optical power(0.01dBm)"] || "NULL").padEnd(12);
-                    const rxValue = String(entry["RX optical power(0.01dBm)"] || "NULL").padEnd(12);
-                    
-                    let txDisplay = txStatus;
-                    let rxDisplay = rxStatus;
-                    if (txStatus.trim() === "OK") txDisplay = "✅ OK";
-                    else if (txStatus.trim() === "NOT OK") txDisplay = "❌ NOT OK";
-                    
-                    if (rxStatus.trim() === "OK") rxDisplay = "✅ OK";
-                    else if (rxStatus.trim() === "NOT OK") rxDisplay = "❌ NOT OK";
-                    
-                    text += `\n${cabinet} ${subrack} ${slot} ${portType} ${portNo} ${txDisplay.padEnd(12)} ${rxDisplay.padEnd(12)} ${txValue} ${rxValue}`;
-                    
-                    if (txStatus.trim() === "NOT OK" && rxStatus.trim() === "NOT OK") {
-                        text += `  ← ❌ BOTH TX & RX NOT OK`;
-                    } else if (txStatus.trim() === "NOT OK") {
-                        const upper = String(entry["Transmit Power Upper Threshold(0.01dBm)"] || "NULL");
-                        const lower = String(entry["Transmit Power Lower Threshold(0.01dBm)"] || "NULL");
-                        text += `  ← ❌ TX NOT OK (Range: ${lower} to ${upper})`;
-                    } else if (rxStatus.trim() === "NOT OK") {
-                        const upper = String(entry["Receive Power Upper Threshold(0.01dBm)"] || "NULL");
-                        const lower = String(entry["Receive Power Lower Threshold(0.01dBm)"] || "NULL");
-                        text += `  ← ❌ RX NOT OK (Range: ${lower} to ${upper})`;
-                    }
-                });
-            } else {
-                text += `\n✅ All entries are OK! No NOT OK entries found.`;
-            }
-            
-            text += `\n\n${'='.repeat(60)}`;
-            text += `\nEND OF REPORT`;
-            text += `\n${'='.repeat(60)}`;
+            // Total entries di akhir
+            text += `\nTotal entries: ${entries.length}\n`;
             
             outputDiv.innerHTML = text;
         }
@@ -721,12 +739,12 @@
             parsedData = [];
             filteredData = [];
             resetFilters();
-            showStatus('🗑️ Cleared', 'info');
+            showStatus('ЁЯЧСя╕П Cleared', 'info');
         }
 
         function copyToClipboard() {
             if (parsedData.length === 0) {
-                showStatus('⚠️ No data to copy!', 'error');
+                showStatus('тЪая╕П No data to copy!', 'error');
                 return;
             }
             const outputDiv = document.getElementById('outputText');
@@ -734,7 +752,7 @@
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
-                    showStatus('📋 Copied to clipboard!', 'success');
+                    showStatus('ЁЯУЛ Copied to clipboard!', 'success');
                 }).catch(() => fallbackCopy(text));
             } else {
                 fallbackCopy(text);
@@ -750,16 +768,16 @@
             textarea.select();
             try {
                 document.execCommand('copy');
-                showStatus('📋 Copied to clipboard!', 'success');
+                showStatus('ЁЯУЛ Copied to clipboard!', 'success');
             } catch (err) {
-                showStatus('❌ Failed to copy to clipboard', 'error');
+                showStatus('тЭМ Failed to copy to clipboard', 'error');
             }
             document.body.removeChild(textarea);
         }
 
         function exportData() {
             if (parsedData.length === 0) {
-                showStatus('⚠️ No data to export!', 'error');
+                showStatus('тЪая╕П No data to export!', 'error');
                 return;
             }
             const outputDiv = document.getElementById('outputText');
@@ -774,7 +792,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showStatus('💾 File exported successfully!', 'success');
+            showStatus('ЁЯТ╛ File exported successfully!', 'success');
         }
 
         function showStatus(message, type = 'success') {
