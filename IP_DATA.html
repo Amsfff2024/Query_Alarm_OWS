@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Data Processor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 200px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
+        }
+
+        textarea.output {
+            background: #f8f9fa;
+            min-height: 250px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #34a853;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2d9249;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(52,168,83,0.3);
+        }
+
+        .btn-warning {
+            background: #fbbc04;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e5ac03;
+            transform: translateY(-1px);
+        }
+
+        .status {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #666;
+            margin-top: 10px;
+            border-left: 3px solid #1a73e8;
+        }
+
+        .status.success {
+            border-left-color: #34a853;
+        }
+
+        .status.error {
+            border-left-color: #ea4335;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .modal p {
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal .btn {
+            width: 100%;
+            padding: 12px;
+        }
+
+        .modal .btn-success {
+            background: #34a853;
+            color: white;
+        }
+
+        .modal .btn-success:hover {
+            background: #2d9249;
+        }
+
+        .modal .btn-danger {
+            background: #ea4335;
+            color: white;
+        }
+
+        .modal .btn-danger:hover {
+            background: #d33426;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            textarea {
+                min-height: 150px;
+                font-size: 12px;
+            }
+            
+            .btn {
+                padding: 8px 18px;
+                font-size: 13px;
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IP DATA PROCESSOR</h1>
+        <p class="subtitle">Masukkan data NE, DEVIP dan VLANMAP</p>
+
+        <div class="section">
+            <label class="section-title">Input Data</label>
+            <textarea id="inputData" placeholder="Tempelkan data dari CLI..."></textarea>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="processData()">PROCESS DATA</button>
+            <button class="btn btn-warning" onclick="clearInput()">Clear</button>
+            <button class="btn btn-warning" onclick="loadSample()" style="background:#4285f4;">Load Sample</button>
+        </div>
+
+        <div class="section">
+            <label class="section-title">Output</label>
+            <textarea id="outputData" class="output" readonly></textarea>
+        </div>
+
+        <div id="statusBar" class="status">Ready</div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal">
+            <h2 id="modalTitle">Success</h2>
+            <p id="modalMessage">Data berhasil diproses!</p>
+            <button class="btn btn-success" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample data yang sama dengan versi Python
+        const SAMPLE_DATA = `LST NE:;
+VIP_MI_KRL_BNICITY1_EP
++++    VIP_MI_KRL_BNICITY1_EP        2026-03-02 09:44:53
+O&M    #4762
+%%/*1902296870*/LST NE:;%%
+RETCODE = 0  Operation succeeded.
+
+List Network Element Configuration
+----------------------------------
+           Network Element Name  =  VIP_MI_KRL_BNICITY1_EP
+               Software Version  =  BTS3900_5900 V100R021C10SPC220
+              Hot Patch Version  =  NULL
+                   NeRM Version  =  5900BTSDATAV100R021C10SPC220
+                Product Version  =  BTS5900 V100R021C10SPC220
+                  Site Location  =  NULL
+          Deployment Identifier  =  NULL
+                      Site Name  =  12JKP0166
+                     User Label  =  NULL
+            Cloud BB Identifier  =  0
+Redundancy BTS Group Identifier  =  NULL
+      Redundancy BTS Group Name  =  NULL
+(Number of results = 1)
+
+
+---    END
+
+LST DEVIP:;
+VIP_MI_KRL_BNICITY1_EP
++++    VIP_MI_KRL_BNICITY1_EP        2026-03-02 09:44:53
+O&M    #4764
+%%/*1902296874*/LST DEVIP:;%%
+RETCODE = 0  Operation succeeded.
+
+List Device IP Configuration Data
+---------------------------------
+Cabinet No.  Subrack No.  Slot No.  Subboard Type  Port Type      Port No.  VRF Index  IP Address      Mask             Borrow IFIP  Control Mode  User Label
+
+0            0            6         Base Board     Ethernet Port  0         0          10.131.111.242  255.255.255.252  NULL         Manual Mode   NEW_CLOCK 
+0            0            6         Base Board     Ethernet Port  0         0          100.72.185.198  255.255.255.252  NULL         Manual Mode   2G        
+0            0            6         Base Board     Ethernet Port  0         0          100.72.186.198  255.255.255.252  NULL         Manual Mode   OAM       
+0            0            6         Base Board     Ethernet Port  0         0          100.72.187.198  255.255.255.252  NULL         Manual Mode   S1/X2 CP  
+0            0            6         Base Board     Ethernet Port  0         0          100.72.188.198  255.255.255.252  NULL         Manual Mode   S1/X2 UP  
+0            0            6         Base Board     Ethernet Port  0         0          100.91.244.122  255.255.255.252  NULL         Manual Mode   5GCP      
+0            0            6         Base Board     Ethernet Port  0         0          100.91.245.122  255.255.255.252  NULL         Manual Mode   5GUP      
+(Number of results = 7)
+
+
+---    END
+
+LST VLANMAP:;
+VIP_MI_KRL_BNICITY1_EP
++++    VIP_MI_KRL_BNICITY1_EP        2026-03-02 09:44:54
+O&M    #4765
+%%/*1902296876*/LST VLANMAP:;%%
+RETCODE = 0  Operation succeeded.
+
+List Next Hop VLAN Mapping Configuration
+----------------------------------------
+VRF Index  Next Hop IP     Mask             VLAN Mode    VLAN ID  Set VLAN Priority  VLAN Priority  VLAN Group No.
+
+0          10.131.111.241  255.255.255.252  Single VLAN  760      Disable            NULL           NULL          
+0          100.72.185.197  255.255.255.252  Single VLAN  160      Disable            NULL           NULL          
+0          100.72.186.197  255.255.255.252  Single VLAN  460      Disable            NULL           NULL          
+0          100.72.187.197  255.255.255.252  Single VLAN  1660     Disable            NULL           NULL          
+0          100.72.188.197  255.255.255.252  Single VLAN  2090     Disable            NULL           NULL          
+0          100.91.244.121  255.255.255.252  Single VLAN  2890     Disable            NULL           NULL          
+0          100.91.245.121  255.255.255.252  Single VLAN  2690     Disable            NULL           NULL          
+(Number of results = 7)
+
+
+---    END`;
+
+        function updateStatus(message, type = '') {
+            const status = document.getElementById('statusBar');
+            status.textContent = message;
+            status.className = 'status' + (type ? ' ' + type : '');
+        }
+
+        function showModal(title, message, isSuccess = true) {
+            const modal = document.getElementById('modal');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            const btn = modal.querySelector('.btn');
+            btn.className = 'btn ' + (isSuccess ? 'btn-success' : 'btn-danger');
+            btn.textContent = isSuccess ? 'OK' : 'Close';
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        function loadSample() {
+            document.getElementById('inputData').value = SAMPLE_DATA;
+            updateStatus('Sample data loaded');
+        }
+
+        function clearInput() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('outputData').value = '';
+            updateStatus('Input cleared');
+        }
+
+        function extractAndProcess(inputText) {
+            const lines = inputText.split('\n');
+            
+            // Parse Network Element Name dan Site Name
+            let networkElementName = 'N/A';
+            let siteName = 'N/A';
+            let inNESection = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.includes('List Network Element Configuration')) {
+                    inNESection = true;
+                    continue;
+                }
+                
+                if (inNESection && line.includes('Network Element Name')) {
+                    const match = line.match(/Network Element Name\s*=\s*(.+)/);
+                    if (match) networkElementName = match[1].trim();
+                }
+                
+                if (inNESection && line.includes('Site Name')) {
+                    const match = line.match(/Site Name\s*=\s*(.+)/);
+                    if (match) {
+                        siteName = match[1].trim();
+                        break;
+                    }
+                }
+            }
+
+            // Parse DEVIP
+            const devipData = [];
+            let inDevipSection = false;
+            let inDevipData = false;
+            
+            for (const line of lines) {
+                if (line.includes('List Device IP Configuration Data')) {
+                    inDevipSection = true;
+                    continue;
+                }
+                
+                if (inDevipSection && line.includes('----')) {
+                    inDevipData = true;
+                    continue;
+                }
+                
+                if (inDevipSection && inDevipData) {
+                    if (line.includes('Number of results') || line.includes('---')) break;
+                    
+                    if (line.trim() && !line.startsWith('Cabinet No.')) {
+                        // Split by multiple spaces
+                        const parts = line.split(/\s{2,}/).map(p => p.trim()).filter(p => p);
+                        if (parts.length >= 12) {
+                            // Service name is at index 11, clean it
+                            const serviceName = parts[11].trim();
+                            devipData.push({
+                                ip: parts[7],
+                                mask: parts[8],
+                                service: serviceName
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Parse VLANMAP
+            const vlanData = {};
+            let inVlanSection = false;
+            let inVlanData = false;
+            
+            for (const line of lines) {
+                if (line.includes('List Next Hop VLAN Mapping Configuration')) {
+                    inVlanSection = true;
+                    continue;
+                }
+                
+                if (inVlanSection && line.includes('----')) {
+                    inVlanData = true;
+                    continue;
+                }
+                
+                if (inVlanSection && inVlanData) {
+                    if (line.includes('Number of results') || line.includes('---')) break;
+                    
+                    if (line.trim() && !line.startsWith('VRF Index')) {
+                        const parts = line.split(/\s{2,}/).map(p => p.trim()).filter(p => p);
+                        if (parts.length >= 6) {
+                            vlanData[parts[1]] = {
+                                mask: parts[2],
+                                vlan: parts[4]
+                            };
+                        }
+                    }
+                }
+            }
+
+            // Gabungkan data
+            const results = [];
+            for (const devip of devipData) {
+                const ipParts = devip.ip.split('.').map(Number);
+                // Next hop = IP-1 (untuk /30 network)
+                const nextHop = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.${ipParts[3] - 1}`;
+                
+                const vlanInfo = vlanData[nextHop] || {};
+                
+                results.push({
+                    service: devip.service,
+                    ip: devip.ip,
+                    nextHop: nextHop,
+                    vlan: vlanInfo.vlan || 'N/A',
+                    mask: devip.mask
+                });
+            }
+
+            // Format output
+            let output = [];
+            output.push(`Network Element Name  =  ${networkElementName}`);
+            output.push(`Site Name  =  ${siteName}`);
+            output.push('='.repeat(50));
+            output.push('');
+            
+            for (const r of results) {
+                output.push(`Service ${r.service}`);
+                output.push(`IP Address : ${r.ip}`);
+                output.push(`Next Hop : ${r.nextHop}`);
+                output.push(`VLAN : ${r.vlan}`);
+                output.push(`Mask : ${r.mask}`);
+                output.push('');
+            }
+            
+            return output.join('\n');
+        }
+
+        function processData() {
+            const inputText = document.getElementById('inputData').value;
+            
+            if (!inputText.trim()) {
+                updateStatus('Error!', 'error');
+                showModal('Error', 'Silakan masukkan data terlebih dahulu!', false);
+                return;
+            }
+
+            updateStatus('Processing data...');
+            
+            try {
+                const result = extractAndProcess(inputText);
+                document.getElementById('outputData').value = result;
+                
+                // Count services
+                const serviceCount = (result.match(/Service /g) || []).length;
+                updateStatus(`Success! Processed ${serviceCount} services`, 'success');
+                showModal('Success', 'Data berhasil diproses!');
+            } catch (error) {
+                updateStatus('Error!', 'error');
+                showModal('Error', `Terjadi error: ${error.message}`, false);
+            }
+        }
+
+        // Load sample data on page load
+        window.addEventListener('load', function() {
+            loadSample();
+        });
+
+        // Optional: Add keyboard shortcut Ctrl+Enter to process
+        document.getElementById('inputData').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                processData();
+            }
+        });
+    </script>
+</body>
+</html>
