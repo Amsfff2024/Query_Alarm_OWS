@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFP Data Parser</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1500px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; }
+        h1 { color: #1a3c5e; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-label { font-weight: bold; font-size: 14px; color: #1a3c5e; margin: 15px 0 5px 0; display: block; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 11px; resize: vertical; min-height: 200px; line-height: 1.3; }
+        textarea:focus { outline: none; border-color: #4a90d9; box-shadow: 0 0 0 3px rgba(74,144,217,0.1); }
+        .button-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background: #4a90d9; color: white; }
+        .btn-primary:hover { background: #357abd; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219a52; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #e08e0b; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+        .status-bar { padding: 8px 12px; background: #f8f9fa; border-radius: 6px; margin: 10px 0; border-left: 4px solid #27ae60; }
+        .status-bar.error { border-left-color: #e74c3c; }
+        .status-bar.info { border-left-color: #4a90d9; }
+        .tabs { display: flex; gap: 2px; margin: 15px 0 0 0; border-bottom: 2px solid #e5e7eb; }
+        .tab-btn { padding: 10px 20px; background: none; border: none; cursor: pointer; font-size: 14px; color: #6b7280; transition: all 0.2s; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { color: #1a3c5e; background: #f8f9fa; }
+        .tab-btn.active { color: #4a90d9; border-bottom-color: #4a90d9; font-weight: bold; }
+        .tab-content { display: none; padding: 15px 0; }
+        .tab-content.active { display: block; }
+        
+        /* Filter Section */
+        .filter-section {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-group label {
+            font-weight: 600;
+            font-size: 12px;
+            color: #1a3c5e;
+        }
+        .filter-group select {
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+        .filter-group select:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+        .filter-badge {
+            font-size: 11px;
+            color: #6b7280;
+            padding: 2px 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+        .filter-badge.active {
+            background: #4a90d9;
+            color: white;
+        }
+        
+        .table-wrapper { overflow: auto; max-height: 450px; border: 1px solid #e5e7eb; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        table thead { position: sticky; top: 0; background: #f8f9fa; z-index: 10; }
+        table th { padding: 6px 4px; text-align: left; font-weight: 600; color: #1a3c5e; border-bottom: 2px solid #e5e7eb; white-space: nowrap; background: #f8f9fa; font-size: 10px; }
+        table td { padding: 4px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-size: 10px; }
+        table tr:hover { background: #f8f9fa; }
+        table tr.hidden { display: none; }
+        .row-ok { background: #d4edda !important; }
+        .row-notok { background: #f8d7da !important; }
+        .status-ok { color: #155724; font-weight: bold; }
+        .status-notok { color: #721c24; font-weight: bold; }
+        .status-na { color: #6c757d; }
+        .output-text { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border: 1px solid #e5e7eb; 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            white-space: pre-wrap; 
+            max-height: 500px; 
+            overflow: auto; 
+            line-height: 1.3;
+        }
+        .output-text .ok { color: #155724; background: #d4edda; padding: 0 4px; border-radius: 3px; font-weight: bold; }
+        .output-text .notok { color: #721c24; background: #f8d7da; padding: 0 4px; border-radius: 3px; font-weight: bold; }
+        .output-text .na { color: #6c757d; }
+        .progress-bar { display: none; width: 100%; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 10px 0; overflow: hidden; }
+        .progress-bar.active { display: block; }
+        .progress-bar .progress-fill { height: 100%; background: #4a90d9; width: 0%; animation: progress 1.5s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+        .counter { font-size: 13px; color: #6b7280; margin-top: 5px; }
+        .counter .filtered-count { color: #4a90d9; font-weight: bold; }
+        @media (max-width: 768px) { .container { padding: 10px; } .btn { padding: 6px 12px; font-size: 12px; } table { font-size: 9px; } table th, table td { padding: 3px; } .filter-section { flex-direction: column; align-items: stretch; } .filter-actions { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 SFP Data Parser</h1>
+        
+        <label class="section-label">📋 Paste SFP Data Below:</label>
+        <textarea id="inputText" placeholder="Paste your SFP data here..."></textarea>
+        
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="parseData()">🔄 Parse Data</button>
+            <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+            <button class="btn btn-success" onclick="exportData()">💾 Export to File</button>
+            <button class="btn btn-warning" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+        </div>
+        
+        <div id="statusBar" class="status-bar">✅ Ready</div>
+        <div id="progressBar" class="progress-bar"><div class="progress-fill"></div></div>
+        
+        <label class="section-label">📊 Parsed Results:</label>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('table')">📊 Table View</button>
+            <button class="tab-btn" onclick="switchTab('text')">📝 Text View (Copyable)</button>
+        </div>
+        
+        <div id="tabTable" class="tab-content active">
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>🔍 Installed Status:</label>
+                    <select id="filterInstalled" onchange="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="In Position">In Position</option>
+                        <option value="Not In Position">Not In Position</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>📊 Status TX:</label>
+                    <select id="filterTx" onchange="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="OK">✅ OK</option>
+                        <option value="NOT OK">❌ NOT OK</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>📊 Status RX:</label>
+                    <select id="filterRx" onchange="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="OK">✅ OK</option>
+                        <option value="NOT OK">❌ NOT OK</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="resetFilters()">🔄 Reset Filters</button>
+                    <span id="filterBadge" class="filter-badge">Showing: All</span>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table id="resultTable">
+                    <thead><tr id="tableHeader"></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div id="rowCounter" class="counter"></div>
+        </div>
+        
+        <div id="tabText" class="tab-content">
+            <div id="outputText" class="output-text">No data to display</div>
+        </div>
+    </div>
+
+    <script>
+        // Target headers (18 + 2 status)
+        const targetHeaders = [
+            "Cabinet No.", "Subrack No.", "Slot No.", "Port Type", "Port No.",
+            "Installed status", "SFP Module Type", "Manufacturer name",
+            "Transmission Mode", "Wavelength(0.01nm)",
+            "Transmission code rate(100Mbit/s)",
+            "Temperature(0.1 degree Celsius)",
+            "TX optical power(0.01dBm)", "RX optical power(0.01dBm)",
+            "Receive Power Upper Threshold(0.01dBm)",
+            "Receive Power Lower Threshold(0.01dBm)",
+            "Transmit Power Upper Threshold(0.01dBm)",
+            "Transmit Power Lower Threshold(0.01dBm)",
+            "Status TX optical power", "Status RX optical power"
+        ];
+
+        // Mapping posisi kolom berdasarkan urutan di header
+        const columnMapping = {
+            "Cabinet No.": 0,
+            "Subrack No.": 1,
+            "Slot No.": 2,
+            "Port Type": 3,
+            "Port No.": 4,
+            "Installed status": 5,
+            "SFP Module Type": 6,
+            "Manufacturer name": 7,
+            "Authenticator Name": 8,
+            "Version": 9,
+            "Transmission Mode": 10,
+            "Wavelength(0.01nm)": 11,
+            "ITU Grid Channel": 12,
+            "Transmission code rate(100Mbit/s)": 13,
+            "Transmission distance of single-mode fiber(100m)": 14,
+            "Transmission distance of OM1 multi-mode fiber(10m)": 15,
+            "Transmission distance of OM2 multi-mode fiber(10m)": 16,
+            "Transmission distance of OM3 multi-mode fiber(10m)": 17,
+            "Transmission distance of OM4 multi-mode fiber(10m)": 18,
+            "Temperature(0.1 degree Celsius)": 19,
+            "Voltage(100microvolt)": 20,
+            "Current(2microampere)": 21,
+            "Current Upper Limit(2microampere)": 22,
+            "Current Lower Limit(2microampere)": 23,
+            "TX optical power(0.1microwatt)": 24,
+            "RX optical power(0.1microwatt)": 25,
+            "Receive Power Upper Threshold(0.1microwatt)": 26,
+            "Receive Power Lower Threshold(0.1microwatt)": 27,
+            "Transmit Power Upper Threshold(0.1microwatt)": 28,
+            "Transmit Power Lower Threshold(0.1microwatt)": 29,
+            "TX optical power(0.01dBm)": 30,
+            "RX optical power(0.01dBm)": 31,
+            "Receive Power Upper Threshold(0.01dBm)": 32,
+            "Receive Power Lower Threshold(0.01dBm)": 33,
+            "Transmit Power Upper Threshold(0.01dBm)": 34,
+            "Transmit Power Lower Threshold(0.01dBm)": 35,
+            "Function Support": 36,
+            "SNR(0.1dB)": 37
+        };
+
+        // Mapping dari header data ke target header
+        const dataToTarget = {
+            "Cabinet No.": "Cabinet No.",
+            "Subrack No.": "Subrack No.",
+            "Slot No.": "Slot No.",
+            "Port Type": "Port Type",
+            "Port No.": "Port No.",
+            "Installed status": "Installed status",
+            "SFP Module Type": "SFP Module Type",
+            "Manufacturer name": "Manufacturer name",
+            "Transmission Mode": "Transmission Mode",
+            "Wavelength(0.01nm)": "Wavelength(0.01nm)",
+            "Transmission code rate(100Mbit/s)": "Transmission code rate(100Mbit/s)",
+            "Temperature(0.1 degree Celsius)": "Temperature(0.1 degree Celsius)",
+            "TX optical power(0.01dBm)": "TX optical power(0.01dBm)",
+            "RX optical power(0.01dBm)": "RX optical power(0.01dBm)",
+            "Receive Power Upper Threshold(0.01dBm)": "Receive Power Upper Threshold(0.01dBm)",
+            "Receive Power Lower Threshold(0.01dBm)": "Receive Power Lower Threshold(0.01dBm)",
+            "Transmit Power Upper Threshold(0.01dBm)": "Transmit Power Upper Threshold(0.01dBm)",
+            "Transmit Power Lower Threshold(0.01dBm)": "Transmit Power Lower Threshold(0.01dBm)"
+        };
+
+        let parsedData = [];
+        let filteredData = [];
+
+        function initTableHeader() {
+            const headerRow = document.getElementById('tableHeader');
+            headerRow.innerHTML = '';
+            targetHeaders.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            if (tab === 'table') {
+                document.getElementById('tabTable').classList.add('active');
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+            } else {
+                document.getElementById('tabText').classList.add('active');
+                document.querySelector('.tab-btn:last-child').classList.add('active');
+            }
+        }
+
+        // Filter functions
+        function applyFilters() {
+            const filterInstalled = document.getElementById('filterInstalled').value;
+            const filterTx = document.getElementById('filterTx').value;
+            const filterRx = document.getElementById('filterRx').value;
+            
+            const tbody = document.getElementById('tableBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.classList.contains('no-data')) return;
+                
+                const installedStatus = row.dataset.installed || '';
+                const txStatus = row.dataset.tx || '';
+                const rxStatus = row.dataset.rx || '';
+                
+                let show = true;
+                
+                if (filterInstalled !== 'all' && installedStatus !== filterInstalled) {
+                    show = false;
+                }
+                
+                if (filterTx !== 'all' && txStatus !== filterTx) {
+                    show = false;
+                }
+                
+                if (filterRx !== 'all' && rxStatus !== filterRx) {
+                    show = false;
+                }
+                
+                if (show) {
+                    row.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+            
+            // Update counter
+            const total = parsedData.length;
+            const counter = document.getElementById('rowCounter');
+            if (visibleCount === total) {
+                counter.innerHTML = `Total entries: ${total}`;
+                document.getElementById('filterBadge').textContent = 'Showing: All';
+                document.getElementById('filterBadge').className = 'filter-badge';
+            } else {
+                counter.innerHTML = `Showing: <span class="filtered-count">${visibleCount}</span> of ${total} entries`;
+                document.getElementById('filterBadge').textContent = `Showing: ${visibleCount} of ${total}`;
+                document.getElementById('filterBadge').className = 'filter-badge active';
+            }
+            
+            showStatus(`🔍 Filtered: ${visibleCount} of ${total} entries`, 'info');
+        }
+
+        function resetFilters() {
+            document.getElementById('filterInstalled').value = 'all';
+            document.getElementById('filterTx').value = 'all';
+            document.getElementById('filterRx').value = 'all';
+            applyFilters();
+            showStatus('🔄 Filters reset', 'info');
+        }
+
+        function parseData() {
+            const text = document.getElementById('inputText').value;
+            if (!text.trim()) {
+                showStatus('⚠️ Please paste some SFP data first!', 'error');
+                return;
+            }
+
+            showProgress(true);
+            showStatus('⏳ Parsing data...', 'info');
+
+            setTimeout(() => {
+                try {
+                    const entries = parseSFPData(text);
+                    parsedData = entries;
+                    filteredData = entries;
+                    updateTableView(entries);
+                    updateTextView(entries);
+                    document.getElementById('rowCounter').textContent = `Total entries: ${entries.length}`;
+                    document.getElementById('filterBadge').textContent = 'Showing: All';
+                    document.getElementById('filterBadge').className = 'filter-badge';
+                    showStatus(`✅ Parsed ${entries.length} entries successfully`, 'success');
+                } catch (error) {
+                    showStatus(`❌ Error: ${error.message}`, 'error');
+                    console.error(error);
+                } finally {
+                    showProgress(false);
+                }
+            }, 100);
+        }
+
+        function parseSFPData(text) {
+            const lines = text.split('\n');
+            const entries = [];
+            
+            let inDataSection = false;
+            let headerColumns = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (line.includes('Cabinet No.') && line.includes('Subrack No.')) {
+                    inDataSection = true;
+                    headerColumns = parseHeaderColumns(line);
+                    continue;
+                }
+                
+                if (line.includes('------')) {
+                    continue;
+                }
+                
+                if (inDataSection && line.trim() && /^\s*\d/.test(line)) {
+                    const entry = parseDataRow(line, headerColumns);
+                    if (entry && Object.keys(entry).length > 0) {
+                        const mappedEntry = {};
+                        for (let target of targetHeaders) {
+                            if (target === "Status TX optical power" || target === "Status RX optical power") {
+                                continue;
+                            }
+                            let found = false;
+                            for (let [dataKey, targetKey] of Object.entries(dataToTarget)) {
+                                if (targetKey === target && entry[dataKey] !== undefined) {
+                                    mappedEntry[target] = entry[dataKey] || "NULL";
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                mappedEntry[target] = "NULL";
+                            }
+                        }
+                        
+                        mappedEntry["Status TX optical power"] = calculateStatus(mappedEntry, 'tx');
+                        mappedEntry["Status RX optical power"] = calculateStatus(mappedEntry, 'rx');
+                        
+                        let hasData = false;
+                        for (let key of targetHeaders) {
+                            if (key !== "Status TX optical power" && key !== "Status RX optical power") {
+                                if (mappedEntry[key] && mappedEntry[key] !== "NULL") {
+                                    hasData = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (hasData) {
+                            entries.push(mappedEntry);
+                        }
+                    }
+                }
+                
+                if (line.includes('Number of results')) {
+                    inDataSection = false;
+                }
+            }
+            
+            return entries;
+        }
+
+        function parseHeaderColumns(line) {
+            const columns = [];
+            const headers = Object.keys(columnMapping);
+            
+            for (let header of headers) {
+                const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedHeader);
+                const match = line.match(regex);
+                if (match) {
+                    columns.push({
+                        name: header,
+                        start: match.index,
+                        end: match.index + header.length
+                    });
+                }
+            }
+            
+            for (let i = 0; i < columns.length; i++) {
+                if (i < columns.length - 1) {
+                    columns[i].end = columns[i + 1].start;
+                } else {
+                    columns[i].end = line.length;
+                }
+            }
+            
+            return columns;
+        }
+
+        function parseDataRow(line, columns) {
+            const entry = {};
+            for (let col of columns) {
+                let value = line.substring(col.start, col.end).trim();
+                if (!value || value === '') {
+                    value = "NULL";
+                }
+                entry[col.name] = value;
+            }
+            return entry;
+        }
+
+        function calculateStatus(entry, type) {
+            let powerKey, upperKey, lowerKey;
+            
+            if (type === 'tx') {
+                powerKey = "TX optical power(0.01dBm)";
+                upperKey = "Transmit Power Upper Threshold(0.01dBm)";
+                lowerKey = "Transmit Power Lower Threshold(0.01dBm)";
+            } else {
+                powerKey = "RX optical power(0.01dBm)";
+                upperKey = "Receive Power Upper Threshold(0.01dBm)";
+                lowerKey = "Receive Power Lower Threshold(0.01dBm)";
+            }
+            
+            const power = entry[powerKey];
+            const upper = entry[upperKey];
+            const lower = entry[lowerKey];
+            
+            if (power === "NULL" || upper === "NULL" || lower === "NULL") {
+                return "N/A";
+            }
+            
+            const powerNum = parseFloat(power);
+            const upperNum = parseFloat(upper);
+            const lowerNum = parseFloat(lower);
+            
+            if (isNaN(powerNum) || isNaN(upperNum) || isNaN(lowerNum)) {
+                return "N/A";
+            }
+            
+            if (lowerNum <= powerNum && powerNum <= upperNum) {
+                return "OK";
+            } else {
+                return "NOT OK";
+            }
+        }
+
+        function updateTableView(entries) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr class="no-data"><td colspan="20" style="text-align:center;padding:20px;">No data to display</td></tr>';
+                return;
+            }
+            
+            entries.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                const txStatus = entry["Status TX optical power"];
+                const rxStatus = entry["Status RX optical power"];
+                const installedStatus = entry["Installed status"] || "NULL";
+                
+                row.dataset.installed = installedStatus;
+                row.dataset.tx = txStatus;
+                row.dataset.rx = rxStatus;
+                row.dataset.index = index;
+                
+                if (txStatus === "OK" && rxStatus === "OK") {
+                    row.className = 'row-ok';
+                } else if (txStatus === "NOT OK" || rxStatus === "NOT OK") {
+                    row.className = 'row-notok';
+                }
+                
+                targetHeaders.forEach(header => {
+                    const td = document.createElement('td');
+                    const value = entry[header] || "NULL";
+                    td.textContent = value;
+                    
+                    if (header === "Status TX optical power" || header === "Status RX optical power") {
+                        if (value === "OK") {
+                            td.className = 'status-ok';
+                        } else if (value === "NOT OK") {
+                            td.className = 'status-notok';
+                        } else {
+                            td.className = 'status-na';
+                        }
+                    }
+                    
+                    row.appendChild(td);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            resetFilters();
+        }
+
+        function updateTextView(entries) {
+            const outputDiv = document.getElementById('outputText');
+            
+            if (entries.length === 0) {
+                outputDiv.innerHTML = 'No data to display';
+                return;
+            }
+            
+            // Calculate column widths untuk tabel data
+            const colWidths = {};
+            targetHeaders.forEach(header => {
+                colWidths[header] = header.length;
+            });
+            
+            entries.forEach(entry => {
+                targetHeaders.forEach(header => {
+                    const value = String(entry[header] || "NULL");
+                    if (value.length > colWidths[header]) {
+                        colWidths[header] = value.length;
+                    }
+                });
+            });
+            
+            targetHeaders.forEach(header => {
+                colWidths[header] += 2;
+            });
+            
+            // BUILD TEXT - SUMMARY di POSISI PALING ATAS
+            let text = '';
+            
+            // === 1. STATUS SUMMARY (PALING ATAS) ===
+            const okTx = entries.filter(e => e["Status TX optical power"] === "OK").length;
+            const notOkTx = entries.filter(e => e["Status TX optical power"] === "NOT OK").length;
+            const naTx = entries.filter(e => e["Status TX optical power"] === "N/A").length;
+            const okRx = entries.filter(e => e["Status RX optical power"] === "OK").length;
+            const notOkRx = entries.filter(e => e["Status RX optical power"] === "NOT OK").length;
+            const naRx = entries.filter(e => e["Status RX optical power"] === "N/A").length;
+            
+            text += `${'='.repeat(60)}\n`;
+            text += `STATUS SUMMARY:\n`;
+            text += `${'='.repeat(60)}\n`;
+            
+            text += `TX Optical Power: `;
+            text += `OK=${okTx} `;
+            if (okTx > 0) text += `✅ `;
+            text += `NOT OK=${notOkTx} `;
+            if (notOkTx > 0) text += `❌ `;
+            text += `N/A=${naTx}\n`;
+            
+            text += `RX Optical Power: `;
+            text += `OK=${okRx} `;
+            if (okRx > 0) text += `✅ `;
+            text += `NOT OK=${notOkRx} `;
+            if (notOkRx > 0) text += `❌ `;
+            text += `N/A=${naRx}\n`;
+            
+            // === 2. DETAIL NOT OK ENTRIES ===
+            const notOkEntries = entries.filter(e => 
+                e["Status TX optical power"] === "NOT OK" || 
+                e["Status RX optical power"] === "NOT OK"
+            );
+            
+            text += `\n${'='.repeat(60)}\n`;
+            text += `DETAIL NOT OK ENTRIES:\n`;
+            text += `${'='.repeat(60)}\n`;
+            
+            if (notOkEntries.length > 0) {
+                text += `Total NOT OK entries: ${notOkEntries.length} ❌\n\n`;
+                text += `${'Cabinet'.padEnd(10)} ${'Subrack'.padEnd(10)} ${'Slot'.padEnd(10)} ${'Port Type'.padEnd(12)} ${'Port No'.padEnd(8)} ${'Status TX'.padEnd(12)} ${'Status RX'.padEnd(12)} ${'TX Value'.padEnd(12)} ${'RX Value'.padEnd(12)}\n`;
+                text += `${'-'.repeat(100)}\n`;
+                
+                notOkEntries.forEach(entry => {
+                    const cabinet = String(entry["Cabinet No."] || "NULL").padEnd(10);
+                    const subrack = String(entry["Subrack No."] || "NULL").padEnd(10);
+                    const slot = String(entry["Slot No."] || "NULL").padEnd(10);
+                    const portType = String(entry["Port Type"] || "NULL").padEnd(12);
+                    const portNo = String(entry["Port No."] || "NULL").padEnd(8);
+                    const txStatus = String(entry["Status TX optical power"] || "N/A").padEnd(12);
+                    const rxStatus = String(entry["Status RX optical power"] || "N/A").padEnd(12);
+                    const txValue = String(entry["TX optical power(0.01dBm)"] || "NULL").padEnd(12);
+                    const rxValue = String(entry["RX optical power(0.01dBm)"] || "NULL").padEnd(12);
+                    
+                    let txDisplay = txStatus;
+                    let rxDisplay = rxStatus;
+                    if (txStatus.trim() === "OK") txDisplay = "✅ OK";
+                    else if (txStatus.trim() === "NOT OK") txDisplay = "❌ NOT OK";
+                    
+                    if (rxStatus.trim() === "OK") rxDisplay = "✅ OK";
+                    else if (rxStatus.trim() === "NOT OK") rxDisplay = "❌ NOT OK";
+                    
+                    text += `${cabinet} ${subrack} ${slot} ${portType} ${portNo} ${txDisplay.padEnd(12)} ${rxDisplay.padEnd(12)} ${txValue} ${rxValue}`;
+                    
+                    if (txStatus.trim() === "NOT OK" && rxStatus.trim() === "NOT OK") {
+                        text += `  ← ❌ BOTH TX & RX NOT OK\n`;
+                    } else if (txStatus.trim() === "NOT OK") {
+                        const upper = String(entry["Transmit Power Upper Threshold(0.01dBm)"] || "NULL");
+                        const lower = String(entry["Transmit Power Lower Threshold(0.01dBm)"] || "NULL");
+                        text += `  ← ❌ TX NOT OK (Range: ${lower} to ${upper})\n`;
+                    } else if (rxStatus.trim() === "NOT OK") {
+                        const upper = String(entry["Receive Power Upper Threshold(0.01dBm)"] || "NULL");
+                        const lower = String(entry["Receive Power Lower Threshold(0.01dBm)"] || "NULL");
+                        text += `  ← ❌ RX NOT OK (Range: ${lower} to ${upper})\n`;
+                    }
+                });
+            } else {
+                text += `✅ All entries are OK! No NOT OK entries found.\n`;
+            }
+            
+            // === 3. END OF REPORT ===
+            text += `\n${'='.repeat(60)}\n`;
+            text += `END OF REPORT\n`;
+            text += `${'='.repeat(60)}\n\n`;
+            
+            // === 4. DETAIL DATA (di bawah summary) ===
+            text += `\n${'='.repeat(60)}\n`;
+            text += `DETAIL DATA:\n`;
+            text += `${'='.repeat(60)}\n\n`;
+            
+            // Header tabel data
+            let headerLine = '';
+            let separatorLine = '';
+            targetHeaders.forEach(header => {
+                headerLine += header.padEnd(colWidths[header]);
+                separatorLine += '-'.repeat(colWidths[header]);
+            });
+            text += headerLine + '\n' + separatorLine + '\n';
+            
+            // Data rows
+            entries.forEach(entry => {
+                let row = '';
+                targetHeaders.forEach(header => {
+                    const value = String(entry[header] || "NULL");
+                    row += value.padEnd(colWidths[header]);
+                });
+                text += row + '\n';
+            });
+            
+            // Total entries di akhir
+            text += `\nTotal entries: ${entries.length}\n`;
+            
+            outputDiv.innerHTML = text;
+        }
+
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').innerHTML = 'No data to display';
+            document.getElementById('tableBody').innerHTML = '';
+            document.getElementById('rowCounter').textContent = '';
+            parsedData = [];
+            filteredData = [];
+            resetFilters();
+            showStatus('🗑️ Cleared', 'info');
+        }
+
+        function copyToClipboard() {
+            if (parsedData.length === 0) {
+                showStatus('⚠️ No data to copy!', 'error');
+                return;
+            }
+            const outputDiv = document.getElementById('outputText');
+            const text = outputDiv.textContent || outputDiv.innerText;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showStatus('📋 Copied to clipboard!', 'success');
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+        
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showStatus('📋 Copied to clipboard!', 'success');
+            } catch (err) {
+                showStatus('❌ Failed to copy to clipboard', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function exportData() {
+            if (parsedData.length === 0) {
+                showStatus('⚠️ No data to export!', 'error');
+                return;
+            }
+            const outputDiv = document.getElementById('outputText');
+            const text = outputDiv.textContent || outputDiv.innerText;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const dateStr = new Date().toISOString().slice(0,10);
+            a.download = `sfp_data_${dateStr}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showStatus('💾 File exported successfully!', 'success');
+        }
+
+        function showStatus(message, type = 'success') {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.className = 'status-bar';
+            if (type === 'error') statusBar.classList.add('error');
+            else if (type === 'info') statusBar.classList.add('info');
+        }
+
+        function showProgress(show) {
+            const progressBar = document.getElementById('progressBar');
+            if (show) progressBar.classList.add('active');
+            else progressBar.classList.remove('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initTableHeader();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                parseData();
+            }
+        });
+    </script>
+</body>
+</html>
