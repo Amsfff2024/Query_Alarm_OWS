@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huawei MAE Alarm Analytics Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Google Fonts: Poppins + Inter + JetBrains Mono -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Corporate Minimalist Theme - Clean & Professional */
+  --bg-primary: #f4f5f7;
+  --bg-secondary: #eceef1;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafbfc;
+  --text-primary: #1a2332;
+  --text-secondary: #3d4759;
+  --text-muted: #6b7484;
+  --border-color: #e2e5ea;
+
+  /* Corporate Accent Colors */
+  --navy: #1f3a5f;
+  --navy-light: #2c5282;
+  --steel: #4a6fa5;
+  --steel-light: #6b8cb8;
+  --slate: #475569;
+  --ink: #0f172a;
+
+  /* Status colors (muted, professional) */
+  --success: #1a7f5a;
+  --success-light: #2f9e73;
+  --warning: #a9660b;
+  --warning-light: #c17d1f;
+  --danger: #b3261e;
+  --danger-light: #c8433b;
+  --info: #2563a8;
+  --info-light: #3576bf;
+
+  /* Aliases for inline references kept from original markup */
+  --indigo: var(--navy);
+  --purple: var(--slate);
+  --cyan: var(--info);
+
+  /* Solid corporate accent (no rainbow gradients) */
+  --accent-solid: var(--navy);
+  --gradient-header: linear-gradient(180deg, #1f3a5f 0%, #16283f 100%);
+  --gradient-card: #ffffff;
+  --gradient-accent: linear-gradient(135deg, #1f3a5f 0%, #2c5282 100%);
+  --gradient-soft: linear-gradient(90deg, #2c5282 0%, #4a6fa5 100%);
+
+  /* Fonts */
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Shadows - subtle, corporate */
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 1px 2px rgba(15, 23, 42, 0.02);
+  --shadow-hover: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c3c9d1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--steel);
+}
+
+/* ============ HEADER ============ */
+.header {
+  background: var(--gradient-header);
+  padding: 22px 30px;
+  border-radius: 10px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 4px solid var(--steel-light);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 260px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.03) 100%);
+  pointer-events: none;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -60%;
+  right: 5%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+  font-size: 1.4rem;
+}
+
+.header .subtitle {
+  color: rgba(255,255,255,0.65);
+  font-size: 0.88rem;
+  font-weight: 400;
+}
+
+.header .clock {
+  background: rgba(255,255,255,0.08);
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.12);
+  font-family: var(--font-mono);
+  color: #e6ebf2;
+  font-size: 0.85rem;
+}
+
+/* Status Badge */
+.status-badge {
+  background: rgba(26, 127, 90, 0.15);
+  color: #6ee7b7;
+  padding: 6px 15px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid rgba(110, 231, 183, 0.25);
+  letter-spacing: 0.3px;
+}
+
+.status-badge .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  animation: pulse 2s infinite;
+  margin-right: 7px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ============ CARDS ============ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover);
+  border-color: #d5dae2;
+}
+
+.kpi-card {
+  padding: 18px 22px;
+  background: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-color);
+}
+
+.kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.kpi-icon.indigo { background: var(--navy); }
+.kpi-icon.purple { background: var(--slate); }
+.kpi-icon.cyan { background: var(--info); }
+.kpi-icon.soft { background: var(--steel); }
+.kpi-icon.green { background: var(--success); }
+.kpi-icon.amber { background: var(--warning); }
+.kpi-icon.blue { background: var(--info); }
+.kpi-icon.red { background: var(--danger); }
+
+.kpi-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 28px;
+  color: var(--text-primary);
+  margin: 4px 0 0;
+  letter-spacing: -0.3px;
+}
+
+.kpi-label {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin: 0;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ============ LOADING OVERLAY ============ */
+#loadingOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#loadingOverlay.show {
+  display: flex;
+}
+
+.loading-spinner {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: var(--steel-light);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: white;
+  font-size: 16px;
+}
+
+.loading-progress {
+  width: 280px;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.loading-progress .fill {
+  height: 100%;
+  width: 0%;
+  background: var(--steel-light);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* ============ UPLOAD BUTTON ============ */
+.upload-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-wrapper input[type=file] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.upload-btn {
+  background: var(--gradient-accent);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  letter-spacing: 0.2px;
+}
+
+.upload-btn:hover {
+  background: var(--navy-light);
+  color: white;
+}
+
+/* ============ TABLES ============ */
+.table-container {
+  max-height: 350px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.table-container-lg {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.table-container-xl {
+  max-height: 500px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.table {
+  color: var(--text-primary);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table thead th {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 700;
+  border: none;
+  border-bottom: 2px solid var(--border-color);
+  padding: 10px 12px;
+  white-space: nowrap;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-body);
+}
+
+.table thead th .filter-select {
+  display: block;
+  width: 100%;
+  padding: 2px 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.table thead th .filter-select option {
+  background: white;
+  color: var(--text-primary);
+  white-space: normal;
+  word-wrap: break-word;
+  padding: 4px 8px;
+}
+
+.table tbody td {
+  padding: 8px 12px;
+  vertical-align: middle;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color);
+  font-family: var(--font-body);
+}
+
+.table tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+.table tbody td.alarm-name-cell {
+  word-wrap: break-word;
+  white-space: normal;
+  max-width: 400px;
+  min-width: 200px;
+}
+
+/* ============ BADGES ============ */
+.badge-alarm {
+  background: #eef1f5;
+  color: var(--navy);
+  padding: 4px 12px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 12px;
+  display: inline-block;
+  word-wrap: break-word;
+  white-space: normal;
+  border: 1px solid #dde3ea;
+}
+
+.badge-vendor {
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
+  border: 1px solid transparent;
+}
+
+.badge-vendor.zte { background: #fdf3e3; color: var(--warning); border-color: #f5e3c3; }
+.badge-vendor.huawei { background: #fdf3e3; color: var(--warning); border-color: #f5e3c3; }
+.badge-vendor.nokia { background: #e8f0fb; color: var(--info); border-color: #d3e2f4; }
+.badge-vendor.nec { background: #fbeceb; color: var(--danger); border-color: #f3d6d4; }
+.badge-vendor.ericsson { background: #e6f3ee; color: var(--success); border-color: #cde9dd; }
+.badge-vendor.unknown { background: #eef0f3; color: var(--text-secondary); border-color: #e2e5ea; }
+
+.badge-domain {
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
+  border: 1px solid transparent;
+}
+
+.badge-domain.core { background: #eeeaf7; color: #5b3ea6; border-color: #ded5f0; }
+.badge-domain.ip { background: #e8f0fb; color: var(--info); border-color: #d3e2f4; }
+.badge-domain.ran { background: #e6f3ee; color: var(--success); border-color: #cde9dd; }
+.badge-domain.ran2g { background: #fdf3e3; color: var(--warning); border-color: #f5e3c3; }
+.badge-domain.ran4g { background: #e6f2f4; color: #0e6f85; border-color: #cce4e9; }
+.badge-domain.transmission { background: #fbeceb; color: var(--danger); border-color: #f3d6d4; }
+.badge-domain.unknown { background: #eef0f3; color: var(--text-secondary); border-color: #e2e5ea; }
+
+.badge-date {
+  background: #eef1f5;
+  color: var(--navy);
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 11px;
+  display: inline-block;
+  border: 1px solid #dde3ea;
+}
+
+.badge-site {
+  background: #e6f2f4;
+  color: #0e6f85;
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 11px;
+  display: inline-block;
+  border: 1px solid #cce4e9;
+}
+
+.badge-source {
+  background: #fdf3e3;
+  color: var(--warning);
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 11px;
+  display: inline-block;
+  border: 1px solid #f5e3c3;
+}
+
+.badge-device {
+  background: #eeeaf7;
+  color: #5b3ea6;
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 11px;
+  display: inline-block;
+  border: 1px solid #ded5f0;
+}
+
+.badge-cleared {
+  background: #e6f3ee;
+  color: var(--success);
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
+  display: inline-block;
+  border: 1px solid #cde9dd;
+}
+
+.badge-not-cleared {
+  background: #fbeceb;
+  color: var(--danger);
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
+  display: inline-block;
+  border: 1px solid #f3d6d4;
+}
+
+/* Duration Badge */
+.badge-duration {
+  background: #eef1f5;
+  color: var(--navy);
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  display: inline-block;
+  white-space: nowrap;
+  border: 1px solid #dde3ea;
+}
+
+.badge-duration.long {
+  background: #fbeceb;
+  color: var(--danger);
+  border-color: #f3d6d4;
+}
+
+.badge-duration.medium {
+  background: #fdf3e3;
+  color: var(--warning);
+  border-color: #f5e3c3;
+}
+
+/* ============ PROGRESS BAR ============ */
+.progress-bar-custom {
+  height: 6px;
+  border-radius: 10px;
+  background: var(--border-color);
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-custom .fill {
+  height: 100%;
+  background: var(--gradient-soft);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* ============ CHART ============ */
+.chart-wrapper {
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+}
+
+.chart-wrapper canvas {
+  max-height: 280px;
+  max-width: 100%;
+}
+
+/* ============ PAGINATION ============ */
+.pagination-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 0 5px 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 10px;
+}
+
+.pagination-wrapper .info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pagination-wrapper .btn-group .btn {
+  font-size: 12px;
+  padding: 4px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+
+.pagination-wrapper .btn-group .btn:hover:not(:disabled) {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+.pagination-wrapper .btn-group .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-wrapper .page-info {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-family: var(--font-body);
+}
+
+.pagination-wrapper select.form-select {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-body);
+}
+
+/* ============ FILTER RESET ============ */
+.filter-reset {
+  font-size: 11px;
+  padding: 3px 12px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.filter-reset:hover {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+/* ============ SECTION TITLES ============ */
+h6.fw-bold {
+  font-weight: 700 !important;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .header { flex-direction: column; text-align: center; gap: 15px; }
+  .header .clock { align-self: center; }
+  .table-container { max-height: 250px; }
+  .table-container-lg { max-height: 300px; }
+  .table-container-xl { max-height: 350px; }
+  .table thead th .filter-select { max-width: 80px; font-size: 10px; }
+  .pagination-wrapper { flex-direction: column; align-items: stretch; text-align: center; }
+  .pagination-wrapper .btn-group { justify-content: center; flex-wrap: wrap; }
+  .kpi-value { font-size: 22px; }
+  .loading-progress { width: 200px; }
+}
+
+/* ============ DURATION TOOLTIP ============ */
+.duration-tooltip {
+  position: relative;
+  cursor: help;
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOADING OVERLAY ============ -->
+<div id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading Data...</div>
+  <div class="loading-progress">
+    <div class="fill" id="loadingProgress"></div>
+  </div>
+</div>
+
+<!-- ============ MAIN CONTENT ============ -->
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="header d-flex justify-content-between align-items-center flex-wrap">
+    <div>
+      <h3><i class="bi bi-graph-up-arrow me-2"></i>Huawei MAE Alarm Analytics</h3>
+      <div class="subtitle">Multi-vendor & multi-domain alarm monitoring</div>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span class="clock" id="now"><i class="bi bi-clock me-2"></i></span>
+      <span class="status-badge"><span class="dot"></span>Live</span>
+    </div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card kpi-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon indigo"><i class="bi bi-broadcast"></i></div>
+          <div>
+            <p class="kpi-label">Total Alarms</p>
+            <h2 class="kpi-value" id="total">0</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card kpi-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon purple"><i class="bi bi-tags"></i></div>
+          <div>
+            <p class="kpi-label">Alarm Types</p>
+            <h2 class="kpi-value" id="types">0</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card kpi-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon cyan"><i class="bi bi-bar-chart-fill"></i></div>
+          <div>
+            <p class="kpi-label">Top Alarm</p>
+            <h5 class="kpi-value" id="topalarm" style="font-size:18px;font-family:var(--font-body);">-</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card kpi-card">
+        <div class="upload-wrapper">
+          <button class="upload-btn"><i class="bi bi-upload me-2"></i>Upload File</button>
+          <input type="file" id="file" accept=".csv,.xlsx,.xls">
+        </div>
+        <small class="text-muted mt-2 d-block" style="color:var(--text-muted) !important;">Supported: CSV, Excel</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Date Range & Duration KPI -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card kpi-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon blue"><i class="bi bi-calendar-range"></i></div>
+          <div>
+            <p class="kpi-label">Date Range</p>
+            <h6 class="kpi-value" id="dateRange" style="font-size:18px;font-family:var(--font-body);">-</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card kpi-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon soft"><i class="bi bi-calendar-event"></i></div>
+          <div>
+            <p class="kpi-label">Unique Dates</p>
+            <h2 class="kpi-value" id="uniqueDates">0</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card kpi-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon amber"><i class="bi bi-clock-history"></i></div>
+          <div>
+            <p class="kpi-label">Avg Duration (Cleared)</p>
+            <h2 class="kpi-value" id="avgDuration">-</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="chart-wrapper">
+        <h6 class="fw-bold mb-3" style="font-family:var(--font-heading);color:var(--text-primary);">
+          <i class="bi bi-bar-chart-fill me-2" style="color:var(--indigo);"></i>Top 10 Alarm Distribution
+        </h6>
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three Tables Row -->
+  <div class="row g-3 mb-4">
+    <!-- Table 1: Alarm Summary -->
+    <div class="col-lg-4">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold m-0" style="font-family:var(--font-heading);color:var(--text-primary);">
+            <i class="bi bi-table me-2" style="color:var(--indigo);"></i>Alarm Summary
+          </h6>
+          <div>
+            <span class="badge bg-secondary me-2" id="rowCount" style="background:var(--border-color) !important;color:var(--text-secondary);">0 rows</span>
+            <button class="filter-reset" onclick="resetFilters('tblSummary')"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="table table-hover table-sm align-middle" id="tblSummary">
+            <thead>
+              <tr>
+                <th>
+                  Alarm Name
+                  <select class="filter-select" onchange="applyColumnFilter('tblSummary', 0, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:80px;">
+                  Count
+                  <select class="filter-select" onchange="applyColumnFilter('tblSummary', 1, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:100px;">
+                  %
+                  <select class="filter-select" onchange="applyColumnFilter('tblSummary', 2, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 2: Alarm vs Vendor -->
+    <div class="col-lg-4">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold m-0" style="font-family:var(--font-heading);color:var(--text-primary);">
+            <i class="bi bi-building me-2" style="color:var(--purple);"></i>Alarm vs Vendor
+          </h6>
+          <div>
+            <span class="badge bg-secondary me-2" id="vendorCount" style="background:var(--border-color) !important;color:var(--text-secondary);">0 vendors</span>
+            <button class="filter-reset" onclick="resetFilters('tblVendor')"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="table table-hover table-sm align-middle" id="tblVendor">
+            <thead>
+              <tr>
+                <th>
+                  Alarm Name
+                  <select class="filter-select" onchange="applyColumnFilter('tblVendor', 0, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:80px;">
+                  Vendor
+                  <select class="filter-select" onchange="applyColumnFilter('tblVendor', 1, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:70px;">
+                  Count
+                  <select class="filter-select" onchange="applyColumnFilter('tblVendor', 2, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 3: Alarm vs Domain -->
+    <div class="col-lg-4">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold m-0" style="font-family:var(--font-heading);color:var(--text-primary);">
+            <i class="bi bi-diagram-3 me-2" style="color:var(--cyan);"></i>Alarm vs Domain
+          </h6>
+          <div>
+            <span class="badge bg-secondary me-2" id="domainCount" style="background:var(--border-color) !important;color:var(--text-secondary);">0 domains</span>
+            <button class="filter-reset" onclick="resetFilters('tblDomain')"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="table table-hover table-sm align-middle" id="tblDomain">
+            <thead>
+              <tr>
+                <th>
+                  Alarm Name
+                  <select class="filter-select" onchange="applyColumnFilter('tblDomain', 0, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:80px;">
+                  Domain
+                  <select class="filter-select" onchange="applyColumnFilter('tblDomain', 1, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:70px;">
+                  Count
+                  <select class="filter-select" onchange="applyColumnFilter('tblDomain', 2, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table 4: Alarm vs Date -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold m-0" style="font-family:var(--font-heading);color:var(--text-primary);">
+            <i class="bi bi-calendar3 me-2" style="color:var(--indigo);"></i>Alarm vs Date
+          </h6>
+          <div>
+            <span class="badge bg-secondary me-2" id="dateCount" style="background:var(--border-color) !important;color:var(--text-secondary);">0 entries</span>
+            <button class="filter-reset" onclick="resetFilters('tblDate')"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
+        </div>
+        <div class="table-container-lg">
+          <table class="table table-hover table-sm align-middle" id="tblDate">
+            <thead>
+              <tr>
+                <th style="width:40%;">
+                  Alarm Name
+                  <select class="filter-select" onchange="applyColumnFilter('tblDate', 0, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:20%;">
+                  Date
+                  <select class="filter-select" onchange="applyColumnFilter('tblDate', 1, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:15%;">
+                  Count
+                  <select class="filter-select" onchange="applyColumnFilter('tblDate', 2, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:15%;">
+                  %
+                  <select class="filter-select" onchange="applyColumnFilter('tblDate', 3, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="width:10%;">
+                  Duration
+                  <select class="filter-select" onchange="applyColumnFilter('tblDate', 4, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table 5: Detail Alarm with Pagination -->
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold m-0" style="font-family:var(--font-heading);color:var(--text-primary);">
+            <i class="bi bi-list-ul me-2" style="color:var(--cyan);"></i>Detail Alarm
+          </h6>
+          <div>
+            <span class="badge bg-secondary me-2" id="detailCount" style="background:var(--border-color) !important;color:var(--text-secondary);">0 entries</span>
+            <button class="filter-reset" onclick="resetFilters('tblDetail')"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
+        </div>
+        <div class="table-container-xl">
+          <table class="table table-hover table-sm align-middle" id="tblDetail">
+            <thead>
+              <tr>
+                <th style="min-width:200px;max-width:350px;">
+                  Alarm Name
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 0, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:100px;">
+                  Site Name
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 1, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:130px;">
+                  Alarm Source
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 2, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:120px;">
+                  First Occurred
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 3, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:120px;">
+                  Cleared On
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 4, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:80px;">
+                  Duration
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 5, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:80px;">
+                  Vendor
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 6, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:80px;">
+                  Domain
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 7, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+                <th style="min-width:100px;">
+                  Device Type
+                  <select class="filter-select" onchange="applyColumnFilter('tblDetail', 8, this.value)">
+                    <option value="">All</option>
+                  </select>
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <!-- Pagination Controls -->
+        <div class="pagination-wrapper" id="detailPagination">
+          <span class="info" id="detailInfo">Showing 0 - 0 of 0 entries</span>
+          <div class="d-flex align-items-center gap-2">
+            <div class="btn-group">
+              <button class="btn" id="detailPrevBtn" onclick="changeDetailPage(-1)" disabled>Prev</button>
+              <span class="page-info" id="detailPageInfo">Page 1 / 1</span>
+              <button class="btn" id="detailNextBtn" onclick="changeDetailPage(1)" disabled>Next</button>
+            </div>
+            <select class="form-select form-select-sm" style="width:auto;font-size:12px;padding:3px 8px;" id="detailPageSize" onchange="setDetailPageSize(this.value)">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script>
+// ============ CLOCK ============
+document.getElementById('now').innerHTML = `<i class="bi bi-clock me-2"></i>${new Date().toLocaleString()}`;
+setInterval(() => {
+  document.getElementById('now').innerHTML = `<i class="bi bi-clock me-2"></i>${new Date().toLocaleString()}`;
+}, 1000);
+
+let barChartInstance = null;
+let rawData = [];
+let detailDataStore = [];
+let detailCurrentPage = 1;
+let detailPageSize = 50;
+let detailFilteredData = [];
+let detailFilterValues = {};
+
+// ============ LOADING FUNCTIONS ============
+function showLoading() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('loadingProgress').style.width = '0%';
+}
+
+function updateLoadingProgress(percent) {
+  document.getElementById('loadingProgress').style.width = Math.min(percent, 100) + '%';
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('loadingProgress').style.width = '0%';
+}
+
+// ============ DURATION CALCULATION ============
+function calculateDuration(firstOccurred, clearedOn) {
+  if (!firstOccurred || firstOccurred === '-' || firstOccurred === 'Not Cleared') return null;
+  if (!clearedOn || clearedOn === '-' || clearedOn === 'Not Cleared') return null;
+  
+  try {
+    const first = new Date(firstOccurred);
+    const cleared = new Date(clearedOn);
+    if (isNaN(first) || isNaN(cleared)) return null;
+    
+    const diffMs = cleared - first;
+    if (diffMs < 0) return null;
+    
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    
+    if (diffDay > 0) {
+      return `${diffDay}d ${diffHour % 24}h`;
+    } else if (diffHour > 0) {
+      return `${diffHour}h ${diffMin % 60}m`;
+    } else if (diffMin > 0) {
+      return `${diffMin}m ${diffSec % 60}s`;
+    } else {
+      return `${diffSec}s`;
+    }
+  } catch (e) {
+    return null;
+  }
+}
+
+function getDurationClass(durationStr) {
+  if (!durationStr) return '';
+  const match = durationStr.match(/(\d+)/);
+  if (!match) return '';
+  const value = parseInt(match[0]);
+  if (durationStr.includes('d')) return 'long';
+  if (durationStr.includes('h') && value > 1) return 'medium';
+  return '';
+}
+
+function formatDurationForDisplay(duration) {
+  if (!duration) return 'N/A';
+  const cls = getDurationClass(duration);
+  return `<span class="badge-duration ${cls}">${duration}</span>`;
+}
+
+// ============ FILTER FUNCTIONS ============
+function populateFilters(tableId) {
+  const table = document.getElementById(tableId);
+  const headers = table.querySelectorAll('thead th');
+  
+  let dataSource = [];
+  if (tableId === 'tblDetail') {
+    dataSource = detailDataStore;
+  } else {
+    const tbody = table.querySelector('tbody');
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const rowData = [];
+      cells.forEach(cell => rowData.push(cell.textContent.trim()));
+      if (rowData.length > 0) dataSource.push(rowData);
+    });
+  }
+  
+  headers.forEach((header, colIndex) => {
+    const select = header.querySelector('.filter-select');
+    if (!select) return;
+    
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">All</option>';
+    
+    const uniqueValues = new Set();
+    
+    if (tableId === 'tblDetail') {
+      const fields = ['alarmName', 'siteName', 'alarmSource', 'firstOccurred', 'clearedOn', 'duration', 'vendor', 'domain', 'deviceType'];
+      detailDataStore.forEach(item => {
+        const value = item[fields[colIndex]] || '';
+        if (value && value !== 'N/A') uniqueValues.add(value);
+      });
+    } else {
+      dataSource.forEach(rowData => {
+        if (rowData[colIndex]) uniqueValues.add(rowData[colIndex]);
+      });
+    }
+    
+    const sortedValues = Array.from(uniqueValues).sort((a, b) => {
+      const numA = parseFloat(a);
+      const numB = parseFloat(b);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return a.localeCompare(b);
+    });
+    
+    sortedValues.forEach(value => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      option.title = value;
+      select.appendChild(option);
+    });
+    
+    if (detailFilterValues[tableId] && detailFilterValues[tableId][colIndex] !== undefined) {
+      select.value = detailFilterValues[tableId][colIndex];
+    } else if (currentValue) {
+      select.value = currentValue;
+    }
+  });
+}
+
+function applyColumnFilter(tableId, colIndex, filterValue) {
+  if (!detailFilterValues[tableId]) detailFilterValues[tableId] = {};
+  detailFilterValues[tableId][colIndex] = filterValue;
+  
+  if (tableId === 'tblDetail') {
+    applyDetailFilters();
+  } else {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = tbody.querySelectorAll('tr');
+    
+    const filters = [];
+    const headers = table.querySelectorAll('thead th');
+    headers.forEach((header, idx) => {
+      const select = header.querySelector('.filter-select');
+      if (select && select.value) {
+        filters.push({ index: idx, value: select.value });
+      }
+    });
+    
+    rows.forEach(row => {
+      let show = true;
+      const cells = row.querySelectorAll('td');
+      
+      filters.forEach(filter => {
+        if (cells[filter.index]) {
+          const cellText = cells[filter.index].textContent.trim();
+          if (cellText !== filter.value) {
+            show = false;
+          }
+        }
+      });
+      
+      row.style.display = show ? '' : 'none';
+    });
+    
+    const visibleRows = tbody.querySelectorAll('tr:not([style*="display: none"])');
+    const countBadge = table.closest('.card').querySelector('.badge.bg-secondary');
+    if (countBadge) {
+      const totalRows = rows.length;
+      countBadge.textContent = `${visibleRows.length} / ${totalRows} rows`;
+    }
+  }
+}
+
+function resetFilters(tableId) {
+  const table = document.getElementById(tableId);
+  const headers = table.querySelectorAll('thead th');
+  
+  headers.forEach(header => {
+    const select = header.querySelector('.filter-select');
+    if (select) {
+      select.value = '';
+    }
+  });
+  
+  if (detailFilterValues[tableId]) {
+    delete detailFilterValues[tableId];
+  }
+  
+  if (tableId === 'tblDetail') {
+    applyDetailFilters();
+  } else {
+    const tbody = table.querySelector('tbody');
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+      row.style.display = '';
+    });
+    
+    const countBadge = table.closest('.card').querySelector('.badge.bg-secondary');
+    if (countBadge) {
+      countBadge.textContent = `${rows.length} rows`;
+    }
+  }
+}
+
+// ============ DETAIL PAGINATION ============
+function applyDetailFilters() {
+  const filters = [];
+  const headers = document.querySelectorAll('#tblDetail thead th');
+  const fields = ['alarmName', 'siteName', 'alarmSource', 'firstOccurred', 'clearedOn', 'duration', 'vendor', 'domain', 'deviceType'];
+  
+  headers.forEach((header, idx) => {
+    const select = header.querySelector('.filter-select');
+    if (select && select.value) {
+      filters.push({ index: idx, value: select.value });
+    }
+  });
+  
+  detailFilteredData = detailDataStore.filter(item => {
+    const values = fields.map(f => item[f] || '');
+    
+    for (let f of filters) {
+      if (values[f.index] !== f.value) {
+        return false;
+      }
+    }
+    return true;
+  });
+  
+  detailCurrentPage = 1;
+  renderDetailPage();
+}
+
+function renderDetailPage() {
+  const totalItems = detailFilteredData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / detailPageSize));
+  
+  if (detailCurrentPage > totalPages) detailCurrentPage = totalPages;
+  if (detailCurrentPage < 1) detailCurrentPage = 1;
+  
+  const start = (detailCurrentPage - 1) * detailPageSize;
+  const end = Math.min(start + detailPageSize, totalItems);
+  const pageData = detailFilteredData.slice(start, end);
+  
+  const tbody = document.querySelector('#tblDetail tbody');
+  tbody.innerHTML = '';
+  
+  if (pageData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No detail data available</td></tr>`;
+  } else {
+    pageData.forEach(item => {
+      const vendorClass = item.vendor.toLowerCase().replace(/\s/g, '');
+      const domainClass = item.domain.toLowerCase().replace('-', '').replace(/\s/g, '');
+      const isCleared = item.clearedOn !== 'Not Cleared' && item.clearedOn !== '-';
+      const durationHtml = formatDurationForDisplay(item.duration);
+      
+      tbody.innerHTML += `
+        <tr>
+          <td class="alarm-name-cell"><span class="badge-alarm" title="${item.alarmName}">${item.alarmName}</span></td>
+          <td><span class="badge-site"><i class="bi bi-geo-alt me-1"></i>${item.siteName}</span></td>
+          <td><span class="badge-source"><i class="bi bi-server me-1"></i>${item.alarmSource}</span></td>
+          <td><span class="badge-date"><i class="bi bi-clock me-1"></i>${item.firstOccurred}</span></td>
+          <td><span class="${isCleared ? 'badge-cleared' : 'badge-not-cleared'}"><i class="bi ${isCleared ? 'bi-check-circle' : 'bi-x-circle'} me-1"></i>${item.clearedOn}</span></td>
+          <td>${durationHtml}</td>
+          <td><span class="badge-vendor ${vendorClass}">${item.vendor}</span></td>
+          <td><span class="badge-domain ${domainClass}">${item.domain}</span></td>
+          <td><span class="badge-device"><i class="bi bi-cpu me-1"></i>${item.deviceType}</span></td>
+        </tr>
+      `;
+    });
+  }
+  
+  document.getElementById('detailInfo').textContent = 
+    totalItems > 0 ? `Showing ${start + 1} - ${end} of ${totalItems} entries` : 'Showing 0 - 0 of 0 entries';
+  document.getElementById('detailPageInfo').textContent = `Page ${detailCurrentPage} / ${totalPages}`;
+  document.getElementById('detailPrevBtn').disabled = detailCurrentPage <= 1;
+  document.getElementById('detailNextBtn').disabled = detailCurrentPage >= totalPages;
+  document.getElementById('detailCount').textContent = `${totalItems} entries`;
+}
+
+function changeDetailPage(delta) {
+  const totalItems = detailFilteredData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / detailPageSize));
+  const newPage = detailCurrentPage + delta;
+  if (newPage >= 1 && newPage <= totalPages) {
+    detailCurrentPage = newPage;
+    renderDetailPage();
+  }
+}
+
+function setDetailPageSize(size) {
+  detailPageSize = parseInt(size);
+  detailCurrentPage = 1;
+  renderDetailPage();
+}
+
+// ============ FILE HANDLER ============
+document.getElementById('file').onchange = function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+
+  showLoading();
+  updateLoadingProgress(10);
+
+  const reader = new FileReader();
+  if (f.name.endsWith('.csv')) {
+    Papa.parse(f, { 
+      header: true, 
+      skipEmptyLines: true, 
+      complete: r => {
+        updateLoadingProgress(80);
+        setTimeout(() => {
+          processData(r.data);
+          hideLoading();
+        }, 300);
+      }
+    });
+  } else {
+    reader.onload = x => {
+      updateLoadingProgress(50);
+      try {
+        const wb = XLSX.read(x.target.result, { type: 'binary' });
+        const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        updateLoadingProgress(80);
+        setTimeout(() => {
+          processData(data);
+          hideLoading();
+        }, 300);
+      } catch (err) {
+        console.error('Error parsing file:', err);
+        hideLoading();
+        alert('Error parsing file. Please check the format.');
+      }
+    };
+    reader.readAsBinaryString(f);
+  }
+};
+
+function findColumn(keys, candidates) {
+  for (let c of candidates) {
+    const found = keys.find(k => k.toLowerCase().trim() === c.toLowerCase().trim());
+    if (found) return found;
+  }
+  return null;
+}
+
+function extractDate(dateStr) {
+  if (!dateStr) return null;
+  const str = dateStr.toString().trim();
+  const match = str.match(/(\d{4}-\d{2}-\d{2})/);
+  if (match) return match[1];
+  const d = new Date(str);
+  if (!isNaN(d)) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  return null;
+}
+
+function processData(data) {
+  if (!data || data.length === 0) {
+    hideLoading();
+    return;
+  }
+  
+  rawData = data;
+  document.getElementById('total').innerText = data.length;
+
+  const keys = Object.keys(data[0]);
+  console.log('📋 Available columns:', keys);
+  
+  const alarmCol = findColumn(keys, ['Alarm Name', 'Alarm', 'Alarm Type', 'Name', 'AlarmName', 'Alarm_Type', 'Row Labels']);
+  const vendorCol = findColumn(keys, ['Vendor', 'vendor', 'VENDOR']);
+  const domainCol = findColumn(keys, ['Domain', 'domain', 'DOMAIN']);
+  const dateCol = findColumn(keys, ['First Occurred On', 'First Occurred', 'FirstOccurred', 'first_occurred', 'Occurred On']);
+  const siteNameCol = findColumn(keys, ['Site Name', 'Site', 'SITE', 'site', 'Location']);
+  const alarmSourceCol = findColumn(keys, ['Alarm Source', 'Source', 'AlarmSource', 'SOURCE', 'Equipment']);
+  const clearedOnCol = findColumn(keys, ['Cleared On', 'Cleared', 'Clear On', 'ClearedTime', 'Clear Time']);
+  const deviceTypeCol = findColumn(keys, ['Device Type', 'Device', 'NE Type', 'Network Element Type', 'Equipment Type']);
+
+  const pivot = {};
+  const vendorMap = {};
+  const domainMap = {};
+  const dateMap = {};
+  const allDates = new Set();
+  const durations = [];
+
+  data.forEach(row => {
+    let alarmName = (row[alarmCol] || 'Unknown').toString().trim() || 'Unknown';
+    if (alarmName === '' || alarmName === 'Unknown') return;
+    
+    pivot[alarmName] = (pivot[alarmName] || 0) + 1;
+    
+    let vendor = 'Unknown';
+    if (vendorCol && row[vendorCol]) {
+      vendor = row[vendorCol].toString().trim() || 'Unknown';
+    }
+    vendorMap[alarmName] = vendor;
+    
+    let domain = 'Unknown';
+    if (domainCol && row[domainCol]) {
+      domain = row[domainCol].toString().trim() || 'Unknown';
+    }
+    domainMap[alarmName] = domain;
+    
+    if (dateCol && row[dateCol]) {
+      const dateStr = extractDate(row[dateCol]);
+      if (dateStr) {
+        allDates.add(dateStr);
+        const key = `${alarmName}|${dateStr}`;
+        dateMap[key] = (dateMap[key] || 0) + 1;
+      }
+    }
+
+    // Calculate duration for KPI
+    if (dateCol && row[dateCol] && clearedOnCol && row[clearedOnCol]) {
+      const first = row[dateCol].toString().trim();
+      const cleared = row[clearedOnCol].toString().trim();
+      if (first && cleared && cleared !== 'Not Cleared' && cleared !== '-') {
+        const dur = calculateDuration(first, cleared);
+        if (dur) durations.push(dur);
+      }
+    }
+  });
+
+  // Calculate average duration
+  if (durations.length > 0) {
+    let totalSeconds = 0;
+    let count = 0;
+    durations.forEach(dur => {
+      const parts = dur.match(/(\d+)([dhm])/g);
+      if (parts) {
+        let seconds = 0;
+        parts.forEach(p => {
+          const num = parseInt(p);
+          const unit = p.slice(-1);
+          if (unit === 'd') seconds += num * 86400;
+          else if (unit === 'h') seconds += num * 3600;
+          else if (unit === 'm') seconds += num * 60;
+          else if (unit === 's') seconds += num;
+        });
+        if (seconds > 0) {
+          totalSeconds += seconds;
+          count++;
+        }
+      }
+    });
+    if (count > 0) {
+      const avgSec = totalSeconds / count;
+      if (avgSec > 86400) {
+        document.getElementById('avgDuration').innerText = `${Math.round(avgSec / 86400)}d`;
+      } else if (avgSec > 3600) {
+        document.getElementById('avgDuration').innerText = `${Math.round(avgSec / 3600)}h`;
+      } else if (avgSec > 60) {
+        document.getElementById('avgDuration').innerText = `${Math.round(avgSec / 60)}m`;
+      } else {
+        document.getElementById('avgDuration').innerText = `${Math.round(avgSec)}s`;
+      }
+    } else {
+      document.getElementById('avgDuration').innerText = 'N/A';
+    }
+  } else {
+    document.getElementById('avgDuration').innerText = 'N/A';
+  }
+
+  const sorted = Object.entries(pivot).sort((a, b) => b[1] - a[1]);
+  document.getElementById('types').innerText = sorted.length;
+  document.getElementById('topalarm').innerText = sorted.length ? sorted[0][0] : '-';
+  document.getElementById('rowCount').innerText = `${sorted.length} rows`;
+  document.getElementById('uniqueDates').innerText = allDates.size;
+  
+  const sortedDates = Array.from(allDates).sort();
+  if (sortedDates.length > 0) {
+    document.getElementById('dateRange').innerText = `${sortedDates[0]} → ${sortedDates[sortedDates.length - 1]}`;
+  } else {
+    document.getElementById('dateRange').innerText = 'No date data';
+  }
+
+  // Render Table 1
+  const tbody1 = document.querySelector('#tblSummary tbody');
+  tbody1.innerHTML = '';
+  const total = sorted.reduce((sum, [_, count]) => sum + count, 0);
+  
+  sorted.forEach(([name, count]) => {
+    const percent = (count / total * 100).toFixed(1);
+    const displayName = name.length > 50 ? name.substring(0, 47) + '...' : name;
+    tbody1.innerHTML += `
+      <tr>
+        <td><span class="badge-alarm" title="${name}"><i class="bi bi-exclamation-circle me-1"></i>${displayName}</span></td>
+        <td><strong>${count}</strong></td>
+        <td>
+          <div class="progress-bar-custom">
+            <div class="fill" style="width:${percent}%;"></div>
+          </div>
+          <small class="text-muted">${percent}%</small>
+        </td>
+      </tr>
+    `;
+  });
+
+  // Render Table 2
+  const tbody2 = document.querySelector('#tblVendor tbody');
+  tbody2.innerHTML = '';
+  const vendorSet = new Set();
+  
+  sorted.forEach(([name, count]) => {
+    const vendor = vendorMap[name] || 'Unknown';
+    vendorSet.add(vendor);
+    const vendorClass = vendor.toLowerCase().replace(/\s/g, '');
+    const displayName = name.length > 50 ? name.substring(0, 47) + '...' : name;
+    tbody2.innerHTML += `
+      <tr>
+        <td><span class="badge-alarm" title="${name}">${displayName}</span></td>
+        <td><span class="badge-vendor ${vendorClass}">${vendor}</span></td>
+        <td><strong>${count}</strong></td>
+      </tr>
+    `;
+  });
+  document.getElementById('vendorCount').innerText = `${vendorSet.size} vendors`;
+
+  // Render Table 3
+  const tbody3 = document.querySelector('#tblDomain tbody');
+  tbody3.innerHTML = '';
+  const domainSet = new Set();
+  
+  sorted.forEach(([name, count]) => {
+    const domain = domainMap[name] || 'Unknown';
+    domainSet.add(domain);
+    const domainClass = domain.toLowerCase().replace('-', '').replace(/\s/g, '');
+    const displayName = name.length > 50 ? name.substring(0, 47) + '...' : name;
+    tbody3.innerHTML += `
+      <tr>
+        <td><span class="badge-alarm" title="${name}">${displayName}</span></td>
+        <td><span class="badge-domain ${domainClass}">${domain}</span></td>
+        <td><strong>${count}</strong></td>
+      </tr>
+    `;
+  });
+  document.getElementById('domainCount').innerText = `${domainSet.size} domains`;
+
+  // Render Table 4: Alarm vs Date
+  const tbody4 = document.querySelector('#tblDate tbody');
+  tbody4.innerHTML = '';
+  
+  const dateEntries = Object.entries(dateMap).map(([key, count]) => {
+    const [alarm, date] = key.split('|');
+    return { alarm, date, count };
+  });
+  
+  dateEntries.sort((a, b) => {
+    if (a.date !== b.date) return b.date.localeCompare(a.date);
+    return b.count - a.count;
+  });
+  
+  document.getElementById('dateCount').innerText = `${dateEntries.length} entries`;
+  
+  if (dateEntries.length === 0) {
+    tbody4.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No date data available</td></tr>`;
+  } else {
+    const dateTotals = {};
+    dateEntries.forEach(({ date, count }) => {
+      dateTotals[date] = (dateTotals[date] || 0) + count;
+    });
+    
+    dateEntries.forEach(({ alarm, date, count }) => {
+      const percent = ((count / dateTotals[date]) * 100).toFixed(1);
+      let avgDur = 'N/A';
+      const relatedData = rawData.filter(row => {
+        const alarmName = (row[alarmCol] || '').toString().trim();
+        const rowDate = dateCol ? extractDate(row[dateCol]) : null;
+        return alarmName === alarm && rowDate === date && clearedOnCol && row[clearedOnCol];
+      });
+      if (relatedData.length > 0) {
+        let totalSec = 0;
+        let countDur = 0;
+        relatedData.forEach(row => {
+          const first = row[dateCol]?.toString().trim();
+          const cleared = row[clearedOnCol]?.toString().trim();
+          if (first && cleared && cleared !== 'Not Cleared' && cleared !== '-') {
+            const dur = calculateDuration(first, cleared);
+            if (dur) {
+              const parts = dur.match(/(\d+)([dhm])/g);
+              if (parts) {
+                let sec = 0;
+                parts.forEach(p => {
+                  const num = parseInt(p);
+                  const unit = p.slice(-1);
+                  if (unit === 'd') sec += num * 86400;
+                  else if (unit === 'h') sec += num * 3600;
+                  else if (unit === 'm') sec += num * 60;
+                  else if (unit === 's') sec += num;
+                });
+                if (sec > 0) { totalSec += sec; countDur++; }
+              }
+            }
+          }
+        });
+        if (countDur > 0) {
+          const avgSec = totalSec / countDur;
+          if (avgSec > 86400) avgDur = `${Math.round(avgSec / 86400)}d`;
+          else if (avgSec > 3600) avgDur = `${Math.round(avgSec / 3600)}h`;
+          else if (avgSec > 60) avgDur = `${Math.round(avgSec / 60)}m`;
+          else avgDur = `${Math.round(avgSec)}s`;
+        }
+      }
+      
+      tbody4.innerHTML += `
+        <tr>
+          <td class="alarm-name-cell"><span class="badge-alarm" title="${alarm}">${alarm}</span></td>
+          <td><span class="badge-date"><i class="bi bi-calendar-day me-1"></i>${date}</span></td>
+          <td><strong>${count}</strong></td>
+          <td>
+            <div class="progress-bar-custom">
+              <div class="fill" style="width:${percent}%;"></div>
+            </div>
+            <small class="text-muted">${percent}%</small>
+          </td>
+          <td>${formatDurationForDisplay(avgDur)}</td>
+        </tr>
+      `;
+    });
+  }
+
+  // ============ RENDER TABLE 5: DETAIL ALARM ============
+  detailDataStore = [];
+  
+  data.forEach(row => {
+    let alarmName = (row[alarmCol] || 'Unknown').toString().trim() || 'Unknown';
+    if (alarmName === '' || alarmName === 'Unknown') return;
+    
+    const siteName = siteNameCol ? (row[siteNameCol] || '-').toString().trim() : '-';
+    const alarmSource = alarmSourceCol ? (row[alarmSourceCol] || '-').toString().trim() : '-';
+    const firstOccurred = dateCol ? (row[dateCol] || '-').toString().trim() : '-';
+    const clearedOn = clearedOnCol ? (row[clearedOnCol] || 'Not Cleared').toString().trim() : 'Not Cleared';
+    const vendor = vendorCol ? (row[vendorCol] || 'Unknown').toString().trim() : 'Unknown';
+    const domain = domainCol ? (row[domainCol] || 'Unknown').toString().trim() : 'Unknown';
+    const deviceType = deviceTypeCol ? (row[deviceTypeCol] || '-').toString().trim() : '-';
+    
+    let duration = 'N/A';
+    if (firstOccurred !== '-' && clearedOn !== 'Not Cleared' && clearedOn !== '-') {
+      const dur = calculateDuration(firstOccurred, clearedOn);
+      if (dur) duration = dur;
+    }
+    
+    detailDataStore.push({
+      alarmName,
+      siteName,
+      alarmSource,
+      firstOccurred,
+      clearedOn,
+      duration,
+      vendor,
+      domain,
+      deviceType
+    });
+  });
+  
+  detailDataStore.sort((a, b) => {
+    if (a.firstOccurred === b.firstOccurred) return 0;
+    if (a.firstOccurred === '-') return 1;
+    if (b.firstOccurred === '-') return -1;
+    return b.firstOccurred.localeCompare(a.firstOccurred);
+  });
+  
+  detailFilteredData = [...detailDataStore];
+  detailCurrentPage = 1;
+  renderDetailPage();
+
+  ['tblSummary', 'tblVendor', 'tblDomain', 'tblDate'].forEach(tableId => {
+    populateFilters(tableId);
+  });
+  populateFilters('tblDetail');
+
+  // Update chart
+  const labels = sorted.slice(0, 10).map(x => x[0]);
+  const values = sorted.slice(0, 10).map(x => x[1]);
+  renderBarChart(labels, values);
+}
+
+function wrapLabel(label, maxLength = 20) {
+  if (label.length <= maxLength) return [label];
+  
+  const words = label.split(' ');
+  const lines = [];
+  let currentLine = '';
+  
+  words.forEach(word => {
+    if ((currentLine + ' ' + word).length <= maxLength) {
+      currentLine = currentLine ? currentLine + ' ' + word : word;
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  });
+  if (currentLine) lines.push(currentLine);
+  
+  return lines;
+}
+
+function renderBarChart(labels, values) {
+  const ctx = document.getElementById('barChart').getContext('2d');
+  if (barChartInstance) barChartInstance.destroy();
+
+  const colors = [
+    '#6366f1', '#818cf8', '#8b5cf6', '#a78bfa', '#06b6d4',
+    '#22d3ee', '#3b82f6', '#60a5fa', '#22c55e', '#f59e0b'
+  ];
+
+  barChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Alarm Count',
+        data: values,
+        backgroundColor: colors.slice(0, labels.length).map(c => c + 'CC'),
+        borderColor: colors.slice(0, labels.length),
+        borderWidth: 1.5,
+        borderRadius: 6,
+        barPercentage: 0.6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { 
+          display: false 
+        },
+        tooltip: {
+          backgroundColor: '#ffffff',
+          titleColor: '#0f172a',
+          bodyColor: '#1e293b',
+          borderColor: '#e2e8f0',
+          borderWidth: 1,
+          cornerRadius: 8,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          callbacks: {
+            label: function(context) {
+              return 'Count: ' + context.parsed.y;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(99, 102, 241, 0.06)' },
+          ticks: { 
+            font: { 
+              size: 11,
+              family: 'JetBrains Mono'
+            },
+            color: '#64748b'
+          }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { 
+            font: { 
+              size: 8,
+              family: 'Inter'
+            },
+            maxRotation: 0,
+            autoSkip: false,
+            color: '#64748b',
+            callback: function(value, index, ticks) {
+              const label = this.getLabelForValue(value);
+              const lines = wrapLabel(label, 15);
+              return lines;
+            }
+          }
+        }
+      },
+      layout: {
+        padding: {
+          bottom: 35,
+          top: 10
+        }
+      }
+    }
+  });
+}
+
+// Load sample data
+setTimeout(() => {
+  const sampleData = [
+    { 
+      'Alarm Name': 'Control plane security based on port The number of a certain type of packets received on the physical interface in the specified', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 15:03:57',
+      'Site Name': 'Jakarta DC',
+      'Alarm Source': 'Router-01',
+      'Cleared On': '2026-07-18 15:30:12',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'Ethernet physical (ETPI) Interface layer2 down', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:08',
+      'Site Name': 'Surabaya Core',
+      'Alarm Source': 'Switch-02',
+      'Cleared On': '2026-07-18 14:45:00',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'Smartgroup link Lacp negotiation of interface failed', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:08',
+      'Site Name': 'Bandung DC',
+      'Alarm Source': 'Router-03',
+      'Cleared On': 'Not Cleared',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'Ethernet Physical (ETPI) Port down', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:02',
+      'Site Name': 'Jakarta DC',
+      'Alarm Source': 'Switch-01',
+      'Cleared On': '2026-07-18 14:50:30',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'ISIS neighbour down alarm', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:02',
+      'Site Name': 'Surabaya Core',
+      'Alarm Source': 'Router-02',
+      'Cleared On': 'Not Cleared',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'Smartgroup interface IPv6 protocol state of the interface is DOWN', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:02',
+      'Site Name': 'Bandung DC',
+      'Alarm Source': 'Router-01',
+      'Cleared On': '2026-07-18 15:10:45',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'Smartgroup interface available status changed', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:02',
+      'Site Name': 'Jakarta DC',
+      'Alarm Source': 'Switch-03',
+      'Cleared On': 'Not Cleared',
+      'Device Type': 'ZTE M6000'
+    },
+    { 
+      'Alarm Name': 'Smartgroup interface Interface layer2 down', 
+      'Vendor': 'ZTE', 
+      'Domain': 'IP', 
+      'First Occurred On': '2026-07-18 14:23:02',
+      'Site Name': 'Surabaya Core',
+      'Alarm Source': 'Router-04',
+      'Cleared On': '2026-07-18 15:20:00',
+      'Device Type': 'ZTE M6000'
+    }
+  ];
+  processData(sampleData);
+}, 300);
+</script>
+
+</body>
+</html>
