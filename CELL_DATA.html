@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Data Parser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8ecf1;
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .header .shortcut-hint {
+            font-size: 12px;
+            opacity: 0.7;
+            font-weight: 400;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 0;
+            background: #f5f6fa;
+            border-radius: 0 0 8px 8px;
+            min-height: 0;
+            height: calc(100vh - 160px);
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            min-height: 0;
+            margin: 6px 8px;
+        }
+        .panel:first-child {
+            flex: 0 0 35%;
+            margin-top: 8px;
+        }
+        .panel:last-child {
+            flex: 1;
+            margin-bottom: 8px;
+        }
+        .panel-header {
+            padding: 8px 16px;
+            background: #f8f9fc;
+            border-bottom: 2px solid #e0e4ea;
+            border-radius: 6px 6px 0 0;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1a237e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .panel-header .subtitle {
+            font-weight: 400;
+            font-size: 11px;
+            color: #888;
+        }
+        .panel-header .count-badge {
+            background: #e8eaf6;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #1a237e;
+            font-weight: 500;
+        }
+        .panel-body {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel-body textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d0d5dd;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            resize: none;
+            background: #fafbfc;
+            line-height: 1.6;
+            min-height: 80px;
+            width: 100%;
+            overflow: auto;
+        }
+        .panel-body textarea:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 2px rgba(26,35,126,0.1);
+        }
+
+        /* Tab Styling */
+        .tab-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: #fafbfc;
+            border: 1px solid #d0d5dd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .tab-headers {
+            display: flex;
+            background: #f0f2f5;
+            border-bottom: 1px solid #d0d5dd;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            padding: 8px 18px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .tab-btn:hover {
+            background: rgba(26,35,126,0.05);
+            color: #1a237e;
+        }
+        .tab-btn.active {
+            color: #1a237e;
+            border-bottom-color: #1a237e;
+            background: white;
+        }
+        .tab-btn .tab-badge {
+            background: #e8eaf6;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-left: 4px;
+        }
+        .tab-btn.active .tab-badge {
+            background: #1a237e;
+            color: white;
+        }
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            padding: 0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .tab-pane {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .tab-pane.active {
+            display: flex;
+        }
+
+        /* Table Styling with Filters - SCROLL FIX */
+        .table-wrapper {
+            flex: 1;
+            overflow: auto !important;
+            padding: 0;
+            position: relative;
+            min-height: 0;
+            height: 100%;
+        }
+        .table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 1000px;
+        }
+        .table-wrapper thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .table-wrapper th {
+            background: #1a237e;
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+            border: 1px solid #1a237e;
+            position: sticky;
+            top: 0;
+            z-index: 11;
+            min-width: 80px;
+        }
+        .table-wrapper th .filter-select {
+            display: block;
+            width: 100%;
+            padding: 2px 4px;
+            margin-top: 4px;
+            font-size: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 3px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            cursor: pointer;
+            max-width: 140px;
+            font-family: inherit;
+            min-width: 60px;
+        }
+        .table-wrapper th .filter-select option {
+            color: #1a1a1a;
+            background: white;
+        }
+        .table-wrapper th .filter-select option:checked {
+            background: #1a237e;
+            color: white;
+        }
+        .table-wrapper th .filter-select:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .table-wrapper th .filter-select:focus {
+            outline: none;
+            border-color: white;
+        }
+        .table-wrapper th .filter-select.filter-active {
+            background: rgba(255,213,79,0.4);
+            border-color: #ffd54f;
+        }
+        .table-wrapper td {
+            padding: 5px 8px;
+            border: 1px solid #e0e4ea;
+            vertical-align: middle;
+        }
+        .table-wrapper tbody tr:nth-child(even) {
+            background: #f8f9fc;
+        }
+        .table-wrapper tbody tr:hover {
+            background: #e8eaf6;
+        }
+        .table-wrapper tbody tr.hidden-row {
+            display: none;
+        }
+
+        /* Status Colors */
+        .status-normal {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        .status-uninstall {
+            color: #c62828;
+            font-weight: 600;
+        }
+        .cell-id {
+            font-weight: 600;
+            color: #1a237e;
+        }
+        .board-type {
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+            background: #f0f2f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .serial-number {
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .tag-band {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        /* Table Info Bar */
+        .table-info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: #f8f9fc;
+            border-top: 1px solid #e0e4ea;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 12px;
+        }
+        .table-info-bar .filter-stats {
+            color: #666;
+        }
+        .table-info-bar .filter-stats strong {
+            color: #1a237e;
+        }
+        .table-info-bar .filter-stats .highlight {
+            color: #c62828;
+            font-weight: 600;
+        }
+        .btn-reset-filters {
+            padding: 4px 16px;
+            border: 1px solid #d0d5dd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            color: #555;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-reset-filters:hover {
+            background: #ffebee;
+            border-color: #c62828;
+            color: #c62828;
+        }
+        .btn-reset-filters.has-filter {
+            border-color: #c62828;
+            color: #c62828;
+            background: #ffebee;
+        }
+
+        /* Output text container - SCROLL FIX */
+        .output-text-container {
+            flex: 1;
+            background: #fafbfc;
+            padding: 10px;
+            overflow: auto !important;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #1a1a1a;
+            min-height: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .output-text-container:empty::before {
+            content: "Hasil pemrosesan akan muncul di sini...";
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn-process {
+            background: #2e7d32;
+            color: white;
+        }
+        .btn-process:hover {
+            background: #1b5e20;
+        }
+        .btn-clear {
+            background: #c62828;
+            color: white;
+        }
+        .btn-clear:hover {
+            background: #b71c1c;
+        }
+        .btn-copy {
+            background: #1565c0;
+            color: white;
+        }
+        .btn-copy:hover {
+            background: #0d47a1;
+        }
+        .btn-warning {
+            background: #e65100;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #bf360c;
+        }
+        .btn-secondary {
+            background: #546e7a;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #37474f;
+        }
+        .btn-export {
+            background: #6a1b9a;
+            color: white;
+        }
+        .btn-export:hover {
+            background: #4a148c;
+        }
+        .status-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 6px 0 0 0;
+            font-size: 11px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        .status-bar span {
+            background: #f0f2f5;
+            padding: 2px 12px;
+            border-radius: 12px;
+        }
+        .status-message {
+            padding: 6px 14px;
+            border-radius: 4px;
+            margin-top: 6px;
+            display: none;
+            font-size: 13px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .status-message.success {
+            display: block;
+            background: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #a5d6a7;
+        }
+        .status-message.error {
+            display: block;
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        .status-message.info {
+            display: block;
+            background: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #90caf9;
+        }
+        .processing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #1a237e;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .processing-indicator.active {
+            display: inline-flex;
+        }
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ccc;
+            border-top-color: #1a237e;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .footer-info {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            background: #e8eaf6;
+            border-radius: 6px;
+            margin-top: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #1a237e;
+        }
+        .footer-info strong {
+            color: #0d47a1;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                height: auto;
+                max-height: none;
+            }
+            .main-content {
+                height: auto;
+                min-height: 80vh;
+            }
+            .panel:first-child {
+                flex: 0 0 auto;
+                min-height: 200px;
+            }
+            .panel:last-child {
+                min-height: 300px;
+            }
+            .header {
+                padding: 8px 14px;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .header h1 {
+                font-size: 14px;
+            }
+            .header .shortcut-hint {
+                font-size: 10px;
+            }
+            .panel-body {
+                padding: 6px;
+            }
+            .panel-body textarea {
+                min-height: 100px;
+            }
+            .btn {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+            .button-group {
+                gap: 4px;
+            }
+            .tab-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            .table-wrapper table {
+                font-size: 10px;
+                min-width: 600px;
+            }
+            .table-wrapper th, .table-wrapper td {
+                padding: 3px 5px;
+            }
+            .table-wrapper th .filter-select {
+                font-size: 9px;
+                max-width: 80px;
+                min-width: 40px;
+            }
+            .table-info-bar {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+            .btn-reset-filters {
+                font-size: 10px;
+                padding: 3px 10px;
+            }
+        }
+
+        /* Scrollbar */
+        .table-wrapper::-webkit-scrollbar,
+        .output-text-container::-webkit-scrollbar,
+        textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-wrapper::-webkit-scrollbar-track,
+        .output-text-container::-webkit-scrollbar-track,
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .table-wrapper::-webkit-scrollbar-thumb,
+        .output-text-container::-webkit-scrollbar-thumb,
+        textarea::-webkit-scrollbar-thumb {
+            background: #b0b8c4;
+            border-radius: 4px;
+        }
+        .table-wrapper::-webkit-scrollbar-thumb:hover,
+        .output-text-container::-webkit-scrollbar-thumb:hover,
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #8a94a6;
+        }
+        .table-wrapper::-webkit-scrollbar-corner {
+            background: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                📡 Network Data Parser
+                <span class="badge" id="statusBadge">Siap</span>
+            </h1>
+            <div>
+                <span class="processing-indicator" id="processingIndicator">
+                    <span class="spinner"></span> Memproses...
+                </span>
+                <span class="shortcut-hint">| Ctrl+Enter untuk proses</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Panel Atas: Input -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>📥 INPUT DATA</span>
+                    <span class="subtitle">Tempelkan data di sini</span>
+                </div>
+                <div class="panel-body">
+                    <textarea id="inputData" placeholder="Tempelkan output dari perintah LST CELL, DSP CELL, DSP CELLPHYTOPO, DSP BRD, dan DSP BRDMFRINFO di sini...&#10;&#10;Contoh:&#10;LST CELL:;&#10;DSP CELL:;&#10;DSP CELLPHYTOPO:;&#10;DSP BRD:;&#10;DSP BRDMFRINFO:CN=0,SRN=60,SN=0;"></textarea>
+                    <div class="button-group">
+                        <button class="btn btn-process" onclick="processData()">▶ Proses Data</button>
+                        <button class="btn btn-warning" onclick="clearAll()">✕ Hapus Semua</button>
+                    </div>
+                    <div id="statusMessage" class="status-message"></div>
+                    <div class="status-bar">
+                        <span id="inputStats">📄 0 karakter</span>
+                        <span id="lineStats">📏 0 baris</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Bawah: Output dengan Tabs -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>📊 HASIL PEMROSESAN</span>
+                    <span>
+                        <span class="count-badge" id="outputCount">0 baris</span>
+                        <span class="subtitle" style="margin-left:8px;">| Scroll untuk melihat</span>
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <div class="tab-container">
+                        <div class="tab-headers">
+                            <button class="tab-btn active" data-tab="tab-table" onclick="switchTab('tab-table')">
+                                📋 Tabel Cell
+                                <span class="tab-badge" id="tableBadge">0</span>
+                            </button>
+                            <button class="tab-btn" data-tab="tab-text" onclick="switchTab('tab-text')">
+                                📄 Teks Output
+                                <span class="tab-badge" id="textBadge">0</span>
+                            </button>
+                        </div>
+                        <div class="tab-content">
+                            <!-- Tab 1: Tabel dengan Filter -->
+                            <div class="tab-pane active" id="tab-table">
+                                <div class="table-wrapper" id="tableWrapper">
+                                    <div id="tableContainer" style="padding:0;height:100%;">
+                                        <p style="color:#999;text-align:center;padding:40px 0;">
+                                            Belum ada data. Silakan proses data terlebih dahulu.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="table-info-bar">
+                                    <span class="filter-stats">
+                                        Menampilkan <strong id="visibleCount">0</strong> dari <strong id="totalCount">0</strong> cell
+                                        <span id="filterActive" style="display:none;color:#c62828;font-weight:600;">| 🔍 Filter aktif</span>
+                                    </span>
+                                    <div>
+                                        <button class="btn-reset-filters" id="resetFiltersBtn" onclick="resetAllFilters()">
+                                            ↺ Reset Semua Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Tab 2: Teks Output -->
+                            <div class="tab-pane" id="tab-text">
+                                <div class="output-text-container" id="outputData"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-copy" onclick="copyOutput()">📋 Salin Output</button>
+                        <button class="btn btn-secondary" onclick="clearOutput()">✕ Hapus Output</button>
+                        <button class="btn btn-export" onclick="exportTableCSV()">📊 Export CSV</button>
+                    </div>
+                    <div class="status-bar">
+                        <span id="outputStats">📄 0 baris</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-info">
+            <strong>Petunjuk:</strong> 
+            1. Tempelkan semua data di panel atas 
+            2. Klik <strong>"Proses Data"</strong> atau tekan <strong>Ctrl+Enter</strong> 
+            3. Gunakan <strong>dropdown filter</strong> di setiap kolom tabel untuk menyaring data
+            4. Filter akan menampilkan semua value unik dari masing-masing kolom
+            5. Klik <strong>"Reset Semua Filter"</strong> untuk menghapus semua filter
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // NETWORK DATA PARSER - JavaScript (with Table Filters)
+        // ============================================================
+
+        // ---- Global Variables ----
+        let lastParsedData = null;
+        let currentTableData = [];
+        let activeFilters = {};
+
+        // ---- Tab Functions ----
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+            
+            if (tabId === 'tab-table' && currentTableData.length > 0) {
+                applyFilters();
+            }
+        }
+
+        // ---- Utility Functions ----
+        function showStatus(message, type) {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+        }
+
+        function hideStatus() {
+            const el = document.getElementById('statusMessage');
+            el.className = 'status-message';
+        }
+
+        function setProcessing(active) {
+            const indicator = document.getElementById('processingIndicator');
+            const badge = document.getElementById('statusBadge');
+            if (active) {
+                indicator.classList.add('active');
+                badge.textContent = '⏳ Memproses...';
+                badge.style.background = 'rgba(255,213,79,0.3)';
+            } else {
+                indicator.classList.remove('active');
+                badge.textContent = '✓ Siap';
+                badge.style.background = 'rgba(255,255,255,0.2)';
+            }
+        }
+
+        function updateInputStats() {
+            const text = document.getElementById('inputData').value;
+            document.getElementById('inputStats').textContent = '📄 ' + text.length.toLocaleString() + ' karakter';
+            const lines = text.split('\n').filter(l => l.trim()).length;
+            document.getElementById('lineStats').textContent = '📏 ' + lines + ' baris';
+        }
+
+        function updateOutputStats() {
+            const text = document.getElementById('outputData').textContent;
+            const lines = text.split('\n').filter(l => l.trim()).length;
+            document.getElementById('outputStats').textContent = '📄 ' + lines + ' baris';
+            document.getElementById('outputCount').textContent = lines + ' baris';
+            document.getElementById('textBadge').textContent = lines;
+        }
+
+        // ---- Parser Functions ----
+        function parseData(inputText) {
+            const cellTopoData = {};
+            const cellData = {};
+            const lstCellData = {};
+            const brdMfrInfo = {};
+            const alarmData = [];
+
+            // 1. Parse DSP CELLPHYTOPO
+            const topoPattern = /(\d+)\s+(\d+)\s+([\d\-]+)\s+([\d\-,]+)\s+([\d\-]+|\-)\s+([A-Z]+|\-)\s+([A-Z]+|\-)\s+/g;
+            let match;
+            while ((match = topoPattern.exec(inputText)) !== null) {
+                const localCellId = match[2];
+                cellTopoData[localCellId] = {
+                    rfModule: match[3],
+                    connectedBbp: match[4],
+                    servedBbp: match[5]
+                };
+            }
+
+            // 2. Parse DSP CELL
+            const cellPattern = /(\d+)\s+(\S+)\s+(Uninstall|Normal)/g;
+            while ((match = cellPattern.exec(inputText)) !== null) {
+                const localCellId = match[1];
+                cellData[localCellId] = {
+                    cellName: match[2],
+                    cellState: match[3]
+                };
+            }
+
+            // 3. Parse DSP BRDMFRINFO
+            const brdSections = inputText.match(/DSP BRDMFRINFO:CN=(\d+),SRN=(\d+),SN=(\d+);.*?(?=DSP BRDMFRINFO:|---\s+END|\+\+\+|$)/gs) || [];
+            for (const section of brdSections) {
+                const cnMatch = section.match(/CN=(\d+)/);
+                const srnMatch = section.match(/SRN=(\d+)/);
+                const snMatch = section.match(/SN=(\d+)/);
+                if (!cnMatch || !srnMatch || !snMatch) continue;
+                const cabinetNo = cnMatch[1];
+                const subrackNo = srnMatch[1];
+                const slotNo = snMatch[1];
+
+                const isSuccess = section.includes('RETCODE = 0  Operation succeeded.');
+                if (isSuccess) {
+                    const typeMatch = section.match(/Type\s+=\s+([^\n]+)/);
+                    const serialMatch = section.match(/Serial Number\s+=\s+([^\n]+)/);
+                    const descMatch = section.match(/Description\s+=\s+([^\n]+)/);
+                    if (typeMatch && serialMatch && descMatch) {
+                        brdMfrInfo[subrackNo] = {
+                            type: typeMatch[1].trim(),
+                            serialNumber: serialMatch[1].trim(),
+                            description: descMatch[1].trim(),
+                            cabinetNo: cabinetNo,
+                            slotNo: slotNo,
+                            status: 'Available'
+                        };
+                    }
+                } else {
+                    const errorMatch = section.match(/RETCODE\s+=\s+\d+\s+([^\n]+)/);
+                    const errorMsg = errorMatch ? errorMatch[1].trim() : 'Unknown error';
+                    brdMfrInfo[subrackNo] = {
+                        type: 'N/A (Disabled)',
+                        serialNumber: 'N/A (Disabled)',
+                        description: 'Board disabled or unavailable - ' + errorMsg,
+                        cabinetNo: cabinetNo,
+                        slotNo: slotNo,
+                        status: 'Disabled/Unavailable'
+                    };
+                }
+            }
+
+            // 4. Parse LST CELL
+            const lines = inputText.split('\n');
+            let inLstSection = false;
+            const lstPattern = /^\s*(\d+)\s+(\S+)/;
+            const pciPattern = /(\d+[M]?)\s+(\d+[M]?)\s+(\d+)\s+(\d+)/;
+            const bwPattern = /(\d+[M]?)\s+(\d+[M]?)\s+\d+\s+\d+/;
+            const dlEarfcnPattern = /Not configure\s+NULL\s+(\d+)/;
+            const freqBandPattern = /NULL\s+(\d+)/;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.includes('LST CELL:;') || line.includes('Display static parameters of cells')) {
+                    inLstSection = true;
+                    continue;
+                }
+                if (line.includes('---    END') || line.includes('(Number of results =')) {
+                    inLstSection = false;
+                    continue;
+                }
+                if (!inLstSection) continue;
+                if (line.includes('Local Cell ID') || line.includes('----') || line.trim() === '') continue;
+
+                const lstMatch = line.match(lstPattern);
+                if (!lstMatch) continue;
+                const localCellId = lstMatch[1];
+                const cellName = lstMatch[2];
+                if (lstCellData[localCellId]) continue;
+
+                let freqBand = 'Unknown';
+                const fbMatch = line.match(freqBandPattern);
+                if (fbMatch && !fbMatch[1].includes('NULL') && !fbMatch[1].includes('Not configure')) {
+                    freqBand = fbMatch[1];
+                }
+
+                let dlEarfcn = 'Unknown';
+                const dlMatch = line.match(dlEarfcnPattern);
+                if (dlMatch && !dlMatch[1].includes('NULL') && !dlMatch[1].includes('Not configure')) {
+                    dlEarfcn = dlMatch[1];
+                }
+
+                let uplinkBw = 'Unknown', downlinkBw = 'Unknown';
+                const bwMatch = line.match(bwPattern);
+                if (bwMatch) {
+                    uplinkBw = bwMatch[1];
+                    downlinkBw = bwMatch[2];
+                }
+
+                let physicalCellId = 'Unknown';
+                const pciMatch = line.match(pciPattern);
+                if (pciMatch) {
+                    physicalCellId = pciMatch[4];
+                }
+
+                if (freqBand !== 'Unknown' && dlEarfcn !== 'Unknown' && physicalCellId !== 'Unknown') {
+                    lstCellData[localCellId] = {
+                        cellName: cellName,
+                        frequencyBand: freqBand,
+                        downlinkEarfcn: dlEarfcn,
+                        uplinkBw: uplinkBw,
+                        downlinkBw: downlinkBw,
+                        physicalCellId: physicalCellId
+                    };
+                }
+            }
+
+            // 5. Parse Alarm Data
+            const alarmSections = inputText.match(/ALARM\s+\d+.*?(?=ALARM\s+\d+|\(Number of results|\-\-\-|\+\+\+|$)/gs) || [];
+            for (const section of alarmSections) {
+                const alarmInfo = {};
+                const nameMatch = section.match(/Alarm name\s+=\s+([^\n]+)/);
+                if (nameMatch) alarmInfo.alarmName = nameMatch[1].trim();
+                const timeMatch = section.match(/Alarm raised time\s+=\s+([^\n]+)/);
+                if (timeMatch) alarmInfo.raisedTime = timeMatch[1].trim();
+                const locMatch = section.match(/Location info\s+=\s+([^\n]+)/);
+                if (locMatch) alarmInfo.locationInfo = locMatch[1].trim();
+                const specMatch = section.match(/Special info1\s+=\s+([^\n]+)/);
+                if (specMatch) alarmInfo.specialInfo1 = specMatch[1].trim();
+                const sevMatch = section.match(/ALARM\s+\d+\s+(\w+)\s+(\w+)/);
+                if (sevMatch) alarmInfo.severity = sevMatch[1] + ' ' + sevMatch[2];
+                if (Object.keys(alarmInfo).length > 0) {
+                    alarmData.push(alarmInfo);
+                }
+            }
+
+            return { cellTopoData, cellData, lstCellData, brdMfrInfo, alarmData };
+        }
+
+        // ---- Generate Table with Filters ----
+        function generateTableWithFilters(cellTopoData, cellData, lstCellData, brdMfrInfo) {
+            const validCellIds = Object.keys(cellTopoData)
+                .filter(id => cellData[id] && lstCellData[id])
+                .sort((a, b) => parseInt(a) - parseInt(b));
+
+            if (validCellIds.length === 0) {
+                document.getElementById('tableContainer').innerHTML = '<p style="color:#999;text-align:center;padding:40px 0;">Tidak ada data cell yang valid.</p>';
+                document.getElementById('totalCount').textContent = '0';
+                document.getElementById('visibleCount').textContent = '0';
+                document.getElementById('tableBadge').textContent = '0';
+                return;
+            }
+
+            // Build data array
+            const tableData = [];
+            for (const cellId of validCellIds) {
+                const lst = lstCellData[cellId];
+                const cell = cellData[cellId];
+                const topo = cellTopoData[cellId];
+
+                const rfModule = topo.rfModule;
+                let boardType = "N/A";
+                let serialNumber = "N/A";
+
+                const subrackMatch = rfModule.match(/(\d+)-(\d+)-\d+/);
+                if (subrackMatch) {
+                    const subrackNo = subrackMatch[2];
+                    if (brdMfrInfo[subrackNo]) {
+                        const info = brdMfrInfo[subrackNo];
+                        boardType = info.type;
+                        serialNumber = info.serialNumber;
+                    } else {
+                        boardType = "N/A (Not Found)";
+                        serialNumber = "N/A (Not Found)";
+                    }
+                }
+
+                tableData.push({
+                    cellId: cellId,
+                    cellName: lst.cellName,
+                    status: cell.cellState,
+                    band: lst.frequencyBand,
+                    dlEarfcn: lst.downlinkEarfcn,
+                    pci: lst.physicalCellId,
+                    rfModule: rfModule,
+                    boardType: boardType,
+                    serialNumber: serialNumber,
+                    connectedBbp: topo.connectedBbp,
+                    servedBbp: topo.servedBbp
+                });
+            }
+
+            currentTableData = tableData;
+            document.getElementById('tableBadge').textContent = tableData.length;
+            document.getElementById('totalCount').textContent = tableData.length;
+
+            // Build table HTML with filter dropdowns
+            const columns = [
+                { key: 'cellId', label: 'Cell ID' },
+                { key: 'cellName', label: 'Cell Name' },
+                { key: 'status', label: 'Status' },
+                { key: 'band', label: 'Band' },
+                { key: 'dlEarfcn', label: 'DL EARFCN' },
+                { key: 'pci', label: 'PCI' },
+                { key: 'rfModule', label: 'RF Module' },
+                { key: 'boardType', label: 'Board Type' },
+                { key: 'serialNumber', label: 'Serial Number' },
+                { key: 'connectedBbp', label: 'Connected BBP' },
+                { key: 'servedBbp', label: 'Served BBP' }
+            ];
+
+            // Get unique values for each column (including N/A values)
+            const getUniqueValues = (key) => {
+                const values = new Set();
+                tableData.forEach(row => {
+                    let val = row[key] || 'N/A';
+                    if (val === '' || val === null || val === undefined) val = 'N/A';
+                    values.add(String(val));
+                });
+                return Array.from(values).sort((a, b) => {
+                    // Try numeric sort for numbers
+                    const numA = parseFloat(a);
+                    const numB = parseFloat(b);
+                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                    return a.localeCompare(b);
+                });
+            };
+
+            let html = '<table id="dataTable">';
+            html += '<thead><tr>';
+            
+            // Header with filters
+            columns.forEach(col => {
+                const uniqueVals = getUniqueValues(col.key);
+                html += `<th>
+                    <div style="font-size:11px;margin-bottom:2px;">${col.label}</div>
+                    <select class="filter-select" data-column="${col.key}" onchange="applyFilters()">
+                        <option value="">📋 Semua (${uniqueVals.length})</option>`;
+                uniqueVals.forEach(val => {
+                    // Count occurrences
+                    const count = tableData.filter(row => String(row[col.key] || 'N/A') === val).length;
+                    html += `<option value="${val.replace(/"/g, '&quot;')}">${val} (${count})</option>`;
+                });
+                html += `</select>
+                </th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            // Data rows
+            tableData.forEach((row, index) => {
+                html += `<tr data-index="${index}">
+                    <td class="cell-id">${row.cellId}</td>
+                    <td style="font-size:11px;">${row.cellName}</td>
+                    <td><span class="${row.status === 'Normal' ? 'status-normal' : 'status-uninstall'}">${row.status}</span></td>
+                    <td><span class="tag tag-band">Band ${row.band}</span></td>
+                    <td style="font-family:monospace;font-size:11px;">${row.dlEarfcn}</td>
+                    <td style="font-weight:600;color:#c62828;">${row.pci}</td>
+                    <td style="font-family:monospace;font-size:11px;">${row.rfModule}</td>
+                    <td><span class="board-type">${row.boardType}</span></td>
+                    <td class="serial-number">${row.serialNumber}</td>
+                    <td style="font-family:monospace;font-size:11px;">${row.connectedBbp}</td>
+                    <td style="font-family:monospace;font-size:11px;">${row.servedBbp}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = html;
+            
+            // Reset active filters tracking
+            activeFilters = {};
+            document.getElementById('resetFiltersBtn').classList.remove('has-filter');
+            document.getElementById('resetFiltersBtn').innerHTML = '↺ Reset Semua Filter';
+            
+            // Apply filters
+            applyFilters();
+        }
+
+        // ---- Filter Functions ----
+        function applyFilters() {
+            const table = document.getElementById('dataTable');
+            if (!table) return;
+
+            const filters = {};
+            const selects = table.querySelectorAll('.filter-select');
+            let hasActiveFilter = false;
+            
+            selects.forEach(sel => {
+                const col = sel.dataset.column;
+                const val = sel.value;
+                if (val) {
+                    filters[col] = val;
+                    sel.classList.add('filter-active');
+                    hasActiveFilter = true;
+                } else {
+                    sel.classList.remove('filter-active');
+                }
+            });
+
+            activeFilters = filters;
+            
+            // Update reset button
+            const resetBtn = document.getElementById('resetFiltersBtn');
+            if (hasActiveFilter) {
+                resetBtn.classList.add('has-filter');
+                resetBtn.innerHTML = '↺ Reset Semua Filter (' + Object.keys(filters).length + ' aktif)';
+            } else {
+                resetBtn.classList.remove('has-filter');
+                resetBtn.innerHTML = '↺ Reset Semua Filter';
+            }
+
+            const rows = table.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                let show = true;
+                const cells = row.querySelectorAll('td');
+                
+                const colMap = {
+                    cellId: 0,
+                    cellName: 1,
+                    status: 2,
+                    band: 3,
+                    dlEarfcn: 4,
+                    pci: 5,
+                    rfModule: 6,
+                    boardType: 7,
+                    serialNumber: 8,
+                    connectedBbp: 9,
+                    servedBbp: 10
+                };
+
+                for (const [colKey, filterVal] of Object.entries(filters)) {
+                    const idx = colMap[colKey];
+                    if (idx !== undefined) {
+                        let cellText = cells[idx] ? cells[idx].textContent.trim() : '';
+                        // Special handling for band (remove "Band " prefix)
+                        if (colKey === 'band') {
+                            cellText = cellText.replace('Band ', '').trim();
+                        }
+                        if (cellText !== filterVal) {
+                            show = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (show) {
+                    row.classList.remove('hidden-row');
+                    visibleCount++;
+                } else {
+                    row.classList.add('hidden-row');
+                }
+            });
+
+            // Update stats
+            document.getElementById('visibleCount').textContent = visibleCount;
+            document.getElementById('totalCount').textContent = rows.length;
+            
+            const filterActive = Object.keys(filters).length > 0;
+            document.getElementById('filterActive').style.display = filterActive ? 'inline' : 'none';
+        }
+
+        function resetAllFilters() {
+            const table = document.getElementById('dataTable');
+            if (!table) return;
+            
+            const selects = table.querySelectorAll('.filter-select');
+            selects.forEach(sel => sel.value = '');
+            activeFilters = {};
+            applyFilters();
+            
+            showStatus('✅ Semua filter telah direset', 'success');
+            setTimeout(hideStatus, 2000);
+        }
+
+        // ---- Output Generators (Teks) ----
+        function generateDetailedOutput(cellTopoData, cellData, lstCellData, brdMfrInfo) {
+            const lines = [];
+            const header = "Local Cell ID / Cell Name / Cell State / Frequency Band / DL EARFCN / Physical Cell ID / RF Module / Type / Serial Number / Connected BBP / Served BBP";
+            lines.push(header);
+            lines.push("-".repeat(header.length));
+
+            const validCellIds = Object.keys(cellTopoData)
+                .filter(id => cellData[id] && lstCellData[id])
+                .sort((a, b) => parseInt(a) - parseInt(b));
+
+            if (validCellIds.length === 0) {
+                lines.push("NO VALID DATA FOUND - Check if all data sources have matching cell IDs");
+                return lines;
+            }
+
+            for (const cellId of validCellIds) {
+                const lst = lstCellData[cellId];
+                const cell = cellData[cellId];
+                const topo = cellTopoData[cellId];
+
+                const rfModule = topo.rfModule;
+                let boardType = "N/A";
+                let serialNumber = "N/A";
+
+                const subrackMatch = rfModule.match(/(\d+)-(\d+)-\d+/);
+                if (subrackMatch) {
+                    const subrackNo = subrackMatch[2];
+                    if (brdMfrInfo[subrackNo]) {
+                        const info = brdMfrInfo[subrackNo];
+                        boardType = info.type;
+                        serialNumber = info.serialNumber;
+                    } else {
+                        boardType = "N/A (Not Found)";
+                        serialNumber = "N/A (Not Found)";
+                    }
+                }
+
+                const parts = [
+                    cellId,
+                    lst.cellName,
+                    cell.cellState,
+                    lst.frequencyBand,
+                    lst.downlinkEarfcn,
+                    lst.physicalCellId,
+                    rfModule,
+                    boardType,
+                    serialNumber,
+                    topo.connectedBbp,
+                    topo.servedBbp
+                ];
+                lines.push(parts.join(" / "));
+            }
+            return lines;
+        }
+
+        function generateBoardInformation(brdMfrInfo, cellTopoData) {
+            const lines = [];
+            lines.push("=".repeat(100));
+            lines.push("DISPLAY BOARD MANUFACTURING INFORMATION");
+            lines.push("=".repeat(100));
+
+            if (Object.keys(brdMfrInfo).length === 0) {
+                lines.push("No board manufacturing information found");
+                return lines;
+            }
+
+            const rfModuleCells = {};
+            for (const [cellId, topo] of Object.entries(cellTopoData)) {
+                const subrackMatch = topo.rfModule.match(/(\d+)-(\d+)-\d+/);
+                if (subrackMatch) {
+                    const subrackNo = subrackMatch[2];
+                    if (!rfModuleCells[subrackNo]) rfModuleCells[subrackNo] = [];
+                    rfModuleCells[subrackNo].push(cellId);
+                }
+            }
+
+            const available = {};
+            const disabled = {};
+            for (const [key, val] of Object.entries(brdMfrInfo)) {
+                if (val.status === 'Available') available[key] = val;
+                else disabled[key] = val;
+            }
+
+            if (Object.keys(available).length > 0) {
+                lines.push("\n✅ AVAILABLE BOARDS:");
+                lines.push("-".repeat(40));
+                for (const [subrackNo, info] of Object.entries(available).sort((a,b) => parseInt(a[0]) - parseInt(b[0]))) {
+                    lines.push("Subrack No: " + subrackNo);
+                    lines.push("  Type: " + info.type);
+                    lines.push("  Serial Number: " + info.serialNumber);
+                    lines.push("  Description: " + info.description);
+                    const cells = rfModuleCells[subrackNo] || [];
+                    lines.push("  Connected Cells: " + (cells.length ? cells.sort((a,b) => parseInt(a)-parseInt(b)).join(', ') : 'None'));
+                    lines.push("");
+                }
+            }
+
+            if (Object.keys(disabled).length > 0) {
+                lines.push("\n❌ DISABLED/UNAVAILABLE BOARDS:");
+                lines.push("-".repeat(40));
+                for (const [subrackNo, info] of Object.entries(disabled).sort((a,b) => parseInt(a[0]) - parseInt(b[0]))) {
+                    lines.push("Subrack No: " + subrackNo);
+                    lines.push("  Status: " + (info.status || 'Unknown'));
+                    lines.push("  Type: " + info.type);
+                    lines.push("  Serial Number: " + info.serialNumber);
+                    lines.push("  Description: " + info.description);
+                    const cells = rfModuleCells[subrackNo] || [];
+                    lines.push("  Connected Cells: " + (cells.length ? cells.sort((a,b) => parseInt(a)-parseInt(b)).join(', ') : 'None'));
+                    lines.push("");
+                }
+            }
+            return lines;
+        }
+
+        function generateAlarmInformation(alarmData) {
+            const lines = [];
+            lines.push("=".repeat(100));
+            lines.push("ALARM INFORMATION");
+            lines.push("=".repeat(100));
+
+            if (alarmData.length === 0) {
+                lines.push("No alarm data found");
+                return lines;
+            }
+
+            const sorted = [...alarmData].sort((a,b) => (b.raisedTime || '').localeCompare(a.raisedTime || ''));
+            for (let i = 0; i < sorted.length; i++) {
+                const alarm = sorted[i];
+                lines.push("\nALARM #" + (i+1));
+                lines.push("-".repeat(50));
+                lines.push("Alarm Name: " + (alarm.alarmName || 'N/A'));
+                lines.push("Severity: " + (alarm.severity || 'N/A'));
+                lines.push("Alarm Raised Time: " + (alarm.raisedTime || 'N/A'));
+                lines.push("Special Info1: " + (alarm.specialInfo1 || 'N/A'));
+                lines.push("Location Info: " + (alarm.locationInfo || 'N/A'));
+            }
+
+            lines.push("\n" + "=".repeat(80));
+            lines.push("ALARM SUMMARY");
+            lines.push("=".repeat(80));
+            const severityCounter = {};
+            for (const alarm of alarmData) {
+                const sev = alarm.severity || 'Unknown';
+                severityCounter[sev] = (severityCounter[sev] || 0) + 1;
+            }
+            for (const [sev, count] of Object.entries(severityCounter)) {
+                lines.push(sev + ": " + count + " alarm(s)");
+            }
+            lines.push("\nTotal Active Alarms: " + alarmData.length);
+            return lines;
+        }
+
+        function generateSummary(cellTopoData, cellData, lstCellData, brdMfrInfo, alarmData) {
+            const lines = [];
+            const now = new Date();
+            const timestamp = now.getFullYear() + '-' + 
+                String(now.getMonth()+1).padStart(2,'0') + '-' + 
+                String(now.getDate()).padStart(2,'0') + ' ' +
+                String(now.getHours()).padStart(2,'0') + ':' +
+                String(now.getMinutes()).padStart(2,'0') + ':' +
+                String(now.getSeconds()).padStart(2,'0');
+
+            lines.push("=".repeat(100));
+            lines.push("COMPREHENSIVE SUMMARY REPORT");
+            lines.push("=".repeat(100));
+            lines.push("Report generated: " + timestamp);
+            lines.push("");
+
+            const validCellIds = Object.keys(cellTopoData)
+                .filter(id => cellData[id] && lstCellData[id])
+                .sort((a,b) => parseInt(a) - parseInt(b));
+
+            if (validCellIds.length === 0) {
+                lines.push("NO COMPLETE DATA AVAILABLE");
+                return lines;
+            }
+
+            const totalCells = validCellIds.length;
+            const normalCells = validCellIds.filter(id => cellData[id].cellState === 'Normal').length;
+            const uninstallCells = totalCells - normalCells;
+
+            lines.push("1. BASIC STATISTICS:");
+            lines.push("-".repeat(40));
+            lines.push("Total Jumlah Cell: " + totalCells);
+            lines.push("Cell dengan status Normal: " + normalCells);
+            lines.push("Cell dengan status Uninstall: " + uninstallCells);
+            lines.push("Total Active Alarms: " + alarmData.length);
+            lines.push("");
+
+            // Frequency Band Analysis
+            const freqBandCounter = {};
+            const freqBandDetails = {};
+            for (const id of validCellIds) {
+                const band = lstCellData[id].frequencyBand;
+                freqBandCounter[band] = (freqBandCounter[band] || 0) + 1;
+                if (!freqBandDetails[band]) freqBandDetails[band] = [];
+                freqBandDetails[band].push(id + " (" + lstCellData[id].cellName + ")");
+            }
+            lines.push("2. FREQUENCY BAND ANALYSIS:");
+            lines.push("-".repeat(40));
+            for (const [band, count] of Object.entries(freqBandCounter).sort()) {
+                lines.push("Band " + band + ": " + count + " cell");
+                const details = freqBandDetails[band].sort((a,b) => parseInt(a) - parseInt(b));
+                for (const d of details) lines.push("  - " + d);
+                lines.push("");
+            }
+
+            // RF Module Analysis
+            const rfModuleCounter = {};
+            const rfModuleDetails = {};
+            for (const id of validCellIds) {
+                const rf = cellTopoData[id].rfModule;
+                rfModuleCounter[rf] = (rfModuleCounter[rf] || 0) + 1;
+                if (!rfModuleDetails[rf]) rfModuleDetails[rf] = [];
+                rfModuleDetails[rf].push(id + " (" + lstCellData[id].cellName + ")");
+            }
+            lines.push("3. RF MODULE ANALYSIS WITH BOARD INFORMATION:");
+            lines.push("-".repeat(40));
+            for (const [rf, count] of Object.entries(rfModuleCounter).sort()) {
+                lines.push("RF Module " + rf + ": " + count + " cell");
+                const subrackMatch = rf.match(/(\d+)-(\d+)-\d+/);
+                if (subrackMatch) {
+                    const subrackNo = subrackMatch[2];
+                    if (brdMfrInfo[subrackNo]) {
+                        lines.push("  Board Type: " + brdMfrInfo[subrackNo].type);
+                        lines.push("  Serial Number: " + brdMfrInfo[subrackNo].serialNumber);
+                    }
+                }
+                const details = rfModuleDetails[rf].sort((a,b) => parseInt(a) - parseInt(b));
+                for (const d of details) lines.push("  - " + d);
+                lines.push("");
+            }
+
+            // Board Summary
+            lines.push("4. BOARD MANUFACTURING INFORMATION SUMMARY:");
+            lines.push("-".repeat(40));
+            if (Object.keys(brdMfrInfo).length > 0) {
+                const available = {};
+                const disabled = {};
+                for (const [key, val] of Object.entries(brdMfrInfo)) {
+                    if (val.status === 'Available') available[key] = val;
+                    else disabled[key] = val;
+                }
+                if (Object.keys(available).length > 0) {
+                    lines.push("Available Boards:");
+                    for (const [subrack, info] of Object.entries(available).sort((a,b) => parseInt(a[0]) - parseInt(b[0]))) {
+                        lines.push("  Subrack " + subrack + ":");
+                        lines.push("    Type: " + info.type);
+                        lines.push("    Serial: " + info.serialNumber);
+                        const desc = info.description.length > 50 ? info.description.slice(0,50) + "..." : info.description;
+                        lines.push("    Description: " + desc);
+                        lines.push("");
+                    }
+                }
+                if (Object.keys(disabled).length > 0) {
+                    lines.push("Disabled/Unavailable Boards:");
+                    for (const [subrack, info] of Object.entries(disabled).sort((a,b) => parseInt(a[0]) - parseInt(b[0]))) {
+                        lines.push("  Subrack " + subrack + ":");
+                        lines.push("    Status: " + (info.status || 'Unknown'));
+                        lines.push("    Type: " + info.type);
+                        lines.push("    Serial: " + info.serialNumber);
+                        lines.push("");
+                    }
+                }
+            } else {
+                lines.push("No board manufacturing information available");
+                lines.push("");
+            }
+
+            // Served BBP
+            const servedBbpCounter = {};
+            const servedBbpRfModules = {};
+            for (const id of validCellIds) {
+                const bbp = cellTopoData[id].servedBbp;
+                const rf = cellTopoData[id].rfModule;
+                servedBbpCounter[bbp] = (servedBbpCounter[bbp] || 0) + 1;
+                if (!servedBbpRfModules[bbp]) servedBbpRfModules[bbp] = new Set();
+                servedBbpRfModules[bbp].add(rf);
+            }
+            lines.push("5. SERVED BBP ANALYSIS:");
+            lines.push("-".repeat(40));
+            for (const [bbp, count] of Object.entries(servedBbpCounter).sort()) {
+                const rfSet = servedBbpRfModules[bbp] || new Set();
+                lines.push("Served BBP " + bbp + ": " + count + " cell, " + rfSet.size + " RF Module");
+                lines.push("  RF Modules: " + Array.from(rfSet).sort().join(', '));
+                lines.push("");
+            }
+
+            // PCI Analysis
+            const pciCounter = {};
+            const pciDetails = {};
+            for (const id of validCellIds) {
+                const pci = lstCellData[id].physicalCellId;
+                pciCounter[pci] = (pciCounter[pci] || 0) + 1;
+                if (!pciDetails[pci]) pciDetails[pci] = [];
+                pciDetails[pci].push(id + " (" + lstCellData[id].cellName + ")");
+            }
+            const pciConflicts = {};
+            for (const [pci, cells] of Object.entries(pciDetails)) {
+                if (cells.length > 1) pciConflicts[pci] = cells;
+            }
+            lines.push("6. PHYSICAL CELL ID (PCI) ANALYSIS:");
+            lines.push("-".repeat(40));
+            lines.push("Total unique PCI: " + Object.keys(pciCounter).length);
+            if (Object.keys(pciConflicts).length > 0) {
+                lines.push("Potential PCI conflicts: " + Object.keys(pciConflicts).length);
+                for (const [pci, cells] of Object.entries(pciConflicts).sort()) {
+                    lines.push("  PCI " + pci + " digunakan oleh " + cells.length + " cell:");
+                    for (const c of cells) lines.push("    - " + c);
+                    lines.push("");
+                }
+            } else {
+                lines.push("No PCI conflicts detected");
+            }
+
+            // Alarm Summary
+            if (alarmData.length > 0) {
+                lines.push("7. ALARM SUMMARY:");
+                lines.push("-".repeat(40));
+                const sevCounter = {};
+                for (const alarm of alarmData) {
+                    const sev = alarm.severity || 'Unknown';
+                    sevCounter[sev] = (sevCounter[sev] || 0) + 1;
+                }
+                for (const [sev, count] of Object.entries(sevCounter).sort()) {
+                    lines.push("  " + sev + ": " + count + " alarm(s)");
+                }
+                const recent = [...alarmData].sort((a,b) => (b.raisedTime || '').localeCompare(a.raisedTime || '')).slice(0,3);
+                if (recent.length > 0) {
+                    lines.push("\n  Recent Alarms:");
+                    for (const alarm of recent) {
+                        lines.push("    - " + (alarm.alarmName || 'N/A') + " (" + (alarm.raisedTime || 'N/A') + ")");
+                    }
+                }
+            }
+
+            return lines;
+        }
+
+        // ---- Main Process ----
+        function processData() {
+            const inputText = document.getElementById('inputData').value;
+            hideStatus();
+            setProcessing(true);
+
+            setTimeout(() => {
+                try {
+                    if (!inputText.trim()) {
+                        showStatus('⚠️ Harap tempelkan data terlebih dahulu!', 'error');
+                        setProcessing(false);
+                        return;
+                    }
+
+                    const parsed = parseData(inputText);
+                    lastParsedData = parsed;
+                    const { cellTopoData, cellData, lstCellData, brdMfrInfo, alarmData } = parsed;
+
+                    // --- Generate Table with Filters ---
+                    generateTableWithFilters(cellTopoData, cellData, lstCellData, brdMfrInfo);
+
+                    // --- Generate Text Output ---
+                    const outputEl = document.getElementById('outputData');
+                    let outputLines = [];
+
+                    outputLines.push("DETAILED CELL INFORMATION:");
+                    outputLines.push("=".repeat(200));
+                    outputLines.push(...generateDetailedOutput(cellTopoData, cellData, lstCellData, brdMfrInfo));
+                    outputLines.push("");
+                    outputLines.push("=".repeat(200));
+                    outputLines.push("");
+
+                    outputLines.push(...generateBoardInformation(brdMfrInfo, cellTopoData));
+                    outputLines.push("");
+
+                    outputLines.push(...generateAlarmInformation(alarmData));
+                    outputLines.push("");
+                    outputLines.push("=".repeat(100));
+                    outputLines.push("");
+
+                    outputLines.push(...generateSummary(cellTopoData, cellData, lstCellData, brdMfrInfo, alarmData));
+
+                    outputEl.textContent = outputLines.join('\n');
+                    updateOutputStats();
+
+                    // Switch to table tab automatically
+                    switchTab('tab-table');
+
+                    const validCellIds = Object.keys(cellTopoData)
+                        .filter(id => cellData[id] && lstCellData[id]);
+                    showStatus('✅ Data berhasil diproses! Ditemukan ' + validCellIds.length + ' cell yang valid.', 'success');
+                } catch (err) {
+                    showStatus('❌ Error: ' + err.message, 'error');
+                    console.error(err);
+                }
+                setProcessing(false);
+            }, 50);
+        }
+
+        // ---- Export CSV ----
+        function exportTableCSV() {
+            if (!lastParsedData) {
+                showStatus('⚠️ Tidak ada data untuk diexport. Proses data terlebih dahulu!', 'error');
+                return;
+            }
+
+            const { cellTopoData, cellData, lstCellData, brdMfrInfo } = lastParsedData;
+            const validCellIds = Object.keys(cellTopoData)
+                .filter(id => cellData[id] && lstCellData[id])
+                .sort((a, b) => parseInt(a) - parseInt(b));
+
+            if (validCellIds.length === 0) {
+                showStatus('⚠️ Tidak ada data untuk diexport!', 'error');
+                return;
+            }
+
+            let csv = "Cell ID,Cell Name,Status,Frequency Band,DL EARFCN,PCI,RF Module,Board Type,Serial Number,Connected BBP,Served BBP\n";
+
+            for (const cellId of validCellIds) {
+                const lst = lstCellData[cellId];
+                const cell = cellData[cellId];
+                const topo = cellTopoData[cellId];
+
+                const rfModule = topo.rfModule;
+                let boardType = "N/A";
+                let serialNumber = "N/A";
+
+                const subrackMatch = rfModule.match(/(\d+)-(\d+)-\d+/);
+                if (subrackMatch) {
+                    const subrackNo = subrackMatch[2];
+                    if (brdMfrInfo[subrackNo]) {
+                        const info = brdMfrInfo[subrackNo];
+                        boardType = info.type;
+                        serialNumber = info.serialNumber;
+                    } else {
+                        boardType = "N/A (Not Found)";
+                        serialNumber = "N/A (Not Found)";
+                    }
+                }
+
+                const row = [
+                    cellId,
+                    `"${lst.cellName}"`,
+                    cell.cellState,
+                    lst.frequencyBand,
+                    lst.downlinkEarfcn,
+                    lst.physicalCellId,
+                    rfModule,
+                    `"${boardType}"`,
+                    `"${serialNumber}"`,
+                    topo.connectedBbp,
+                    topo.servedBbp
+                ];
+                csv += row.join(',') + '\n';
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'cell_data_export.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus('✅ CSV berhasil diexport!', 'success');
+            setTimeout(hideStatus, 3000);
+        }
+
+        // ---- Utility Actions ----
+        function clearAll() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('outputData').textContent = '';
+            document.getElementById('tableContainer').innerHTML = '<p style="color:#999;text-align:center;padding:40px 0;">Belum ada data. Silakan proses data terlebih dahulu.</p>';
+            document.getElementById('tableBadge').textContent = '0';
+            document.getElementById('totalCount').textContent = '0';
+            document.getElementById('visibleCount').textContent = '0';
+            document.getElementById('filterActive').style.display = 'none';
+            document.getElementById('resetFiltersBtn').classList.remove('has-filter');
+            document.getElementById('resetFiltersBtn').innerHTML = '↺ Reset Semua Filter';
+            currentTableData = [];
+            lastParsedData = null;
+            activeFilters = {};
+            hideStatus();
+            updateInputStats();
+            updateOutputStats();
+        }
+
+        function clearOutput() {
+            document.getElementById('outputData').textContent = '';
+            document.getElementById('tableContainer').innerHTML = '<p style="color:#999;text-align:center;padding:40px 0;">Belum ada data. Silakan proses data terlebih dahulu.</p>';
+            document.getElementById('tableBadge').textContent = '0';
+            document.getElementById('totalCount').textContent = '0';
+            document.getElementById('visibleCount').textContent = '0';
+            document.getElementById('filterActive').style.display = 'none';
+            document.getElementById('resetFiltersBtn').classList.remove('has-filter');
+            document.getElementById('resetFiltersBtn').innerHTML = '↺ Reset Semua Filter';
+            currentTableData = [];
+            lastParsedData = null;
+            activeFilters = {};
+            hideStatus();
+            updateOutputStats();
+        }
+
+        function copyOutput() {
+            const text = document.getElementById('outputData').textContent;
+            if (!text.trim()) {
+                showStatus('⚠️ Tidak ada output untuk disalin!', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('✅ Output berhasil disalin ke clipboard!', 'success');
+                setTimeout(hideStatus, 2000);
+            }).catch(() => {
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showStatus('✅ Output berhasil disalin ke clipboard!', 'success');
+                setTimeout(hideStatus, 2000);
+            });
+        }
+
+        // ---- Event Listeners ----
+        document.getElementById('inputData').addEventListener('input', updateInputStats);
+
+        // ---- Keyboard Shortcuts ----
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                processData();
+            }
+        });
+
+        // ---- Initialize ----
+        updateInputStats();
+        updateOutputStats();
+        document.getElementById('outputData').textContent = '';
+    </script>
+</body>
+</html>
